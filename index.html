@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title data-i18n="title">Calculadora de Muhurtas</title>
+  </head>
+  <body>
+    <div id="app" class="container">
+      <!-- Título -->
+      <h1 data-i18n="title">Calculadora de Muhurtas</h1>
+
+      <section class="init">
+        <!-- Formulario de entrada -->
+        <form id="saptaForm">
+          <input
+            type="text"
+            name="ciudad"
+            placeholder="Ciudad"
+            required
+            data-i18n-placeholder="city"
+          />
+          <input
+            type="text"
+            name="pais"
+            placeholder="País"
+            required
+            data-i18n-placeholder="country"
+          />
+          <input type="date" name="fecha" />
+          <button type="submit" data-i18n="calc">Calcular</button>
+        </form>
+        <!-- Controles: idioma y modo oscuro -->
+        <div class="controls">
+          <select id="lang">
+            <option value="es">Español</option>
+            <option value="en">English</option>
+            <option value="it">Italiano</option>
+          </select>
+          <button id="darkToggle">🌙</button>
+        </div>
+      </section>
+
+      <!-- Loader y mensajes -->
+      <!-- <div id="loader" class="hidden">
+        ⌛ <span data-i18n="loading">Calculando…</span>
+      </div>
+      <div id="errorBox" class="alert error hidden"></div>
+      <div id="successBox" class="alert success hidden"></div> -->
+
+      <!-- Acciones: copiar enlace y exportar CSV -->
+      <!-- <div id="actions" class="actions hidden">
+        <button id="copyLink" data-i18n="copyLink">Copiar enlace</button>
+        <button id="exportCSV" data-i18n="exportCSV">Exportar CSV</button>
+      </div> -->
+
+      <!-- Muhurtas metadata -->
+      <div id="saptaMeta" class="sapta-meta"></div> 
+      <!-- Contenedor de tarjetas -->
+      <div id="cards" class="cards"></div>
+
+      <!-- Diagrama circular -->
+      <h2 data-i18n="diagram">Reloj Solar</h2>
+      <div class="chart-container">
+        <!-- <canvas id="chart" width="600" height="400"></canvas> -->
+         <canvas id="chart" width="600" height="400"></canvas>
+      </div>
+
+      <!-- Mapa -->
+      <h2 data-i18n="map">Ubicación</h2>
+      <div id="map" style="height: 300px; border-radius: 8px"></div>
+    </div>
+
+    <!-- Entry point JS -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
