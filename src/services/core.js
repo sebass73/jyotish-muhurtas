@@ -62,7 +62,7 @@ async function ejecutar(
 // … (preserva todo lo anterior)
 // const { format: fmt } = require("date-fns");
 
-async function ejecutarJSON(
+export async function ejecutarJSON(
   ciudad = "Paola",
   pais = "Italia",
   fechaISO = new Date().toISOString().split("T")[0]
