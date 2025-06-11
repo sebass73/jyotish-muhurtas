@@ -41,6 +41,5 @@ export function generarSaptaKrama(sunrise, muhurtaDurMin, diaSemana) {
     });
   }
 
-  console.log(secuencia);
   return { primerPlaneta, secuencia };
 }

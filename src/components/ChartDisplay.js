@@ -1,6 +1,7 @@
 import Chart from "chart.js/auto";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import { PLANET_SYMBOLS, PLANET_COLORS } from "../utils/constants.js";
+import { T } from "../utils/i18n.js";
 
 Chart.register(ChartDataLabels);
 
@@ -17,59 +18,19 @@ export default class ChartDisplay {
   }
   update(muhurtas) {
     const isDark = document.documentElement.classList.contains("dark");
-    console.log(isDark);
     const labelColor = isDark ? "#e0e0e0" : "#000000";
+    const lang = localStorage.getItem("lang") || "es";
+    console.log(lang)
+    const planetNames = T[lang].planets;
+    console.log(planetNames);
     // const labels = muhurtas.map((m, i) => PLANET_SYMBOLS[i] || m.planeta);
-    const labels = muhurtas.map((m) => m.planeta);
+    // const labels = muhurtas.map((m) => m.planeta);
+    const labels = muhurtas.map((m) => planetNames[m.planeta] || m.planeta);
     const colors = muhurtas.map(
       (m) => PLANET_COLORS[m.planeta.toLowerCase()] || "#ccc"
     );
     const data = Array(labels.length).fill(1);
 
-    // if (!this.chart) {
-    //   this.chart = new Chart(this.ctx, {
-    //     type: "doughnut",
-    //     data: { labels, datasets: [{ data, backgroundColor: colors }] },
-    //     options: {
-    //       rotation: -90,
-    //       circumference: 180,
-    //       cutout: "50%",
-    //       responsive: true,
-    //       maintainAspectRatio: true,
-    //       aspectRatio: 2,
-    //       layout: {
-    //         padding: {
-    //           top: 50,
-    //           bottom: 40,
-    //         },
-    //       },
-    //       plugins: {
-    //         tooltip: {
-    //           callbacks: {
-    //             label: (ctx) => {
-    //               const m = muhurtas[ctx.dataIndex];
-    //               return `${m.inicio}–${m.fin}`;
-    //             },
-    //           },
-    //         },
-    //         legend: { display: false },
-    //         datalabels: {
-    //           formatter: (v, ctx) => ctx.chart.data.labels[ctx.dataIndex],
-    //           anchor: "end",
-    //           align: "end",
-    //           offset: 10,
-    //           font: { size: 14 },
-    //           color: labelColor,
-    //         },
-    //       },
-    //     },
-    //   });
-    // } else {
-    //   this.chart.data.labels = labels;
-    //   this.chart.data.datasets[0].data = data;
-    //   this.chart.data.datasets[0].backgroundColor = colors;
-    //   this.chart.update();
-    // }
     const config = {
       type: "doughnut",
       data: { labels, datasets: [{ data, backgroundColor: colors }] },

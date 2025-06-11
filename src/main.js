@@ -1,5 +1,6 @@
+// src/main.js
 import "./styles/main.css";
-import { initI18n } from "./utils/i18n.js";
+import { initI18n, T } from "./utils/i18n.js";
 import { initDarkMode } from "./utils/darkMode.js";
 import { fetchMuhurtas } from "./services/api.js";
 import Form from "./components/Form.js";
@@ -7,72 +8,120 @@ import Cards from "./components/Cards.js";
 import ChartDisplay from "./components/ChartDisplay.js";
 import MapDisplay from "./components/MapDisplay.js";
 
-async function initApp() {
-  initI18n();
-  initDarkMode();
+export default class MuhurtaApp {
+  constructor() {
+    initI18n();
+    initDarkMode();
 
-  const form = new Form("#saptaForm");
-  const cards = new Cards("#cards");
-  const chart = new ChartDisplay("#chart");
-  const map = new MapDisplay("#map");
+    this.form = new Form("#saptaForm");
+    this.cards = new Cards("#cards");
+    this.chart = new ChartDisplay("#chart");
+    this.map = new MapDisplay("#map");
+    this.metaDiv = document.getElementById("saptaMeta");
+    this.lastData = null;
 
-  form.onSubmit(async (params) => {
-    const metaDiv = document.getElementById("saptaMeta");
+    this.translateUI();
 
-    // Limpiar todo lo anterior
-    metaDiv.style.display = "none";
-    metaDiv.textContent = "";
-    cards.clear();
-    chart.clear?.();
-    map.clear?.();
-    chart.showLoading();
-    try {
-      const data = await fetchMuhurtas(params);
-      const { fecha, sunrise, sunset } = data;
+    this.bindEvents();
+  }
 
-      // calculamos arco del sol en minutos
-      const [h1, m1] = sunrise.split(":").map(Number);
-      const [h2, m2] = sunset.split(":").map(Number);
-      const amanecer = new Date();
-      amanecer.setHours(h1, m1, 0);
-      const atardecer = new Date();
-      atardecer.setHours(h2, m2, 0);
-      const arcoSol = (atardecer - amanecer) / 60000;
-
-      // muhurtas día y noche
-      const muhurtaDia = arcoSol / 12;
-      const muhurtaNoche = (1440 - arcoSol) / 12;
-
-      // día de la semana en español
-      let diaSemana = new Date(fecha).toLocaleDateString("es-ES", {
-        weekday: "long",
-      });
-
-      diaSemana = diaSemana
-        ? diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)
-        : "";
-
-      metaDiv.textContent =
-        `🗓 Día: ${diaSemana}   🌅 Amanecer: ${sunrise}   🌇 Atardecer: ${sunset}   ` +
-        `☀️ Arco del Sol: ${Math.round(arcoSol)} min   ` +
-        `🕒 Muhurta Día: ${Math.round(muhurtaDia)} min   ` +
-        `🌙 Muhurta Noche: ${Math.round(muhurtaNoche)} min`;
-
-      if (diaSemana) {
-        metaDiv.style.display = "flex";
-      } else {
-        metaDiv.style.display = "none";
+  bindEvents() {
+    this.form.onSubmit(async (params) => {
+      this._clearAll();
+      this.chart.showLoading();
+      try {
+        const data = await fetchMuhurtas(params);
+        this.lastData = data;
+        this.renderContent();
+      } catch (err) {
+        this.form.showError(err.message);
+      } finally {
+        this.chart.hideLoading();
       }
-      cards.render(data.saptaKrama);
-      chart.update(data.saptaKrama);
-      map.update(data.latitude, data.longitude, data.ciudad, data.pais);
-    } catch (err) {
-      console.error(err);
-      form.showError(err.message);
-    } finally {
-      chart.hideLoading();
-    }
-  });
+    });
+
+    document.getElementById("lang").addEventListener("change", (e) => {
+      localStorage.setItem("lang", e.target.value);
+      this.translateUI();
+      if (this.lastData) this.renderContent();
+    });
+  }
+
+  translateUI() {
+    const lang = localStorage.getItem("lang") || "es";
+    const t = T[lang];
+
+    document.title = t.title;
+    document.querySelector("h1").textContent = t.title;
+
+    document.querySelectorAll("[data-i18n]").forEach((el) => {
+      el.textContent = t[el.getAttribute("data-i18n")];
+    });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+      el.placeholder = t[el.getAttribute("data-i18n-placeholder")];
+    });
+  }
+
+  renderContent() {
+    const {
+      fecha,
+      sunrise,
+      sunset,
+      diaSemana,
+      arcoSol,
+      latitude,
+      longitude,
+      ciudad,
+      pais,
+      saptaKrama,
+    } = this.lastData;
+
+    this.cards.clear();
+
+    // ——— Cálculos de minutos ———
+    const [h1, m1] = sunrise.split(":").map(Number);
+    const [h2, m2] = sunset.split(":").map(Number);
+    const t1 = new Date(0);
+    t1.setUTCHours(h1, m1, 0);
+    const t2 = new Date(0);
+    t2.setUTCHours(h2, m2, 0);
+    const arcoSolMin = Math.round((t2 - t1) / 60000);
+    const diaMinutos = Math.round(arcoSolMin / 12);
+    const nocheMinutos = Math.round((1440 - arcoSolMin) / 12);
+
+    // ——— Traducción de labels dinámicos ———
+    const lang = localStorage.getItem("lang") || "es";
+    const m = T[lang].meta;
+    const weekday = new Date(fecha)
+      .toLocaleDateString(lang, { weekday: "long" })
+      .replace(/^./, (c) => c.toUpperCase());
+
+    // ——— Render metadata ———
+    this.metaDiv.textContent =
+      `🗓 ${m.day}: ${weekday}   ` +
+      `🌅 ${m.sunrise}: ${sunrise}   ` +
+      `🌇 ${m.sunset}: ${sunset}   ` +
+      `☀️ ${m.solarArc}: ${arcoSolMin} min   ` +
+      `🕒 ${m.daySlots}: ${diaMinutos} min   ` +
+      `🌙 ${m.nightSlots}: ${nocheMinutos} min`;
+    this.metaDiv.style.display = diaSemana ? "flex" : "none";
+
+    // ——— Render cards, gráfico y mapa ———
+    this.cards.render(saptaKrama);
+    this.chart.update(saptaKrama);
+    this.map.update(latitude, longitude, ciudad, pais);
+  }
+
+  _clearAll() {
+    this.metaDiv.style.display = "none";
+    this.metaDiv.textContent = "";
+    this.cards.clear();
+    this.chart.clear?.();
+    this.map.clear?.();
+  }
 }
 
-window.addEventListener("DOMContentLoaded", initApp);
+// Arranque de la aplicación
+window.addEventListener("DOMContentLoaded", () => {
+  new MuhurtaApp();
+});
