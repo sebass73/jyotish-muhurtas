@@ -1,5 +1,5 @@
 // netlify/functions/sapta.js
-const { ejecutarJSON } = require("../../src/main.js");
+const { ejecutarJSON } = require("../../main");
 
 exports.handler = async (event, context) => {
   const params = event.queryStringParameters || {};
