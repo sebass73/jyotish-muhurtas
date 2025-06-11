@@ -20,9 +20,7 @@ export default class ChartDisplay {
     const isDark = document.documentElement.classList.contains("dark");
     const labelColor = isDark ? "#e0e0e0" : "#000000";
     const lang = localStorage.getItem("lang") || "es";
-    console.log(lang)
     const planetNames = T[lang].planets;
-    console.log(planetNames);
     // const labels = muhurtas.map((m, i) => PLANET_SYMBOLS[i] || m.planeta);
     // const labels = muhurtas.map((m) => m.planeta);
     const labels = muhurtas.map((m) => planetNames[m.planeta] || m.planeta);

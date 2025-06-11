@@ -27,7 +27,10 @@
             required
             data-i18n-placeholder="country"
           />
-          <input type="date" name="fecha" />
+          <label for="fecha">
+            <span data-i18n="labelDate">Fecha</span>
+            <input type="date" id="fecha" name="fecha" required />
+          </label>
           <button type="submit" data-i18n="calc">Calcular</button>
         </form>
         <!-- Controles: idioma y modo oscuro -->
@@ -55,7 +58,7 @@
       </div> -->
 
       <!-- Muhurtas metadata -->
-      <div id="saptaMeta" class="sapta-meta"></div> 
+      <div id="saptaMeta" class="sapta-meta"></div>
       <!-- Contenedor de tarjetas -->
       <div id="cards" class="cards"></div>
 
@@ -63,7 +66,7 @@
       <h2 data-i18n="diagram">Reloj Solar</h2>
       <div class="chart-container">
         <!-- <canvas id="chart" width="600" height="400"></canvas> -->
-         <canvas id="chart" width="600" height="400"></canvas>
+        <canvas id="chart" width="600" height="400"></canvas>
       </div>
 
       <!-- Mapa -->
