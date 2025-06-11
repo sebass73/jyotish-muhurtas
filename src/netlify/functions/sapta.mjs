@@ -1,8 +1,7 @@
-import { ejecutarJSON } from '../../src/services/core.js';
+import { ejecutarJSON } from "../../services/core";
 
-exports.handler = async (event, context) => {
+export const handler = async (event) => {
   const params = event.queryStringParameters || {};
-
   try {
     const data = await ejecutarJSON(params.ciudad, params.pais, params.fecha);
     return {
