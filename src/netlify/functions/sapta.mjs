@@ -1,4 +1,4 @@
-import { ejecutarJSON } from "../../services/core";
+import { ejecutarJSON } from "../../services/core.js";
 
 export const handler = async (event) => {
   const params = event.queryStringParameters || {};
