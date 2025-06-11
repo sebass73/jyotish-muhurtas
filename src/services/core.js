@@ -84,7 +84,7 @@ export async function ejecutarJSON(
     arcoSol / 12,
     diaSemana
   );
-  console.log("Ejecutando con parámetros2:");
+  console.log("Ejecutando con parámetros2:", primerPlaneta, secuencia);
   return {
     ciudad,
     pais,

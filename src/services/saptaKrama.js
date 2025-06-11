@@ -40,5 +40,7 @@ export function generarSaptaKrama(sunrise, muhurtaDurMin, diaSemana) {
       fin: format(fin, "HH:mm"),
     });
   }
+
+  console.log(secuencia);
   return secuencia;
 }
