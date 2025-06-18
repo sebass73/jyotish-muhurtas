@@ -153,15 +153,46 @@ export default class ZodiacChart {
     });
 
     // 5) Calcula posiciones planetas
+    // 5) Cálculo de posiciones planetarias más “exacto”
+    // 1) El índice del signo con el que quieras empezar en “arriba”
+    const startSign = "Aries";
+    const startIndex = this.signs.indexOf(startSign);
+
+    // 2) Empuja todo el wheel para que ese signo quede en -π/2 (arriba)
+    //    (2π/12 radianes = 30° por signo)
+    const startAngle =
+      startIndex * ((2 * Math.PI) / this.signs.length) - Math.PI / 2;
+
     this.pts = Object.entries(astroPositions).map(([name, pos]) => {
-      const deg =
-        this.signs.indexOf(pos.sign) * 30 +
-        pos.deg +
-        pos.min / 60 +
-        pos.sec / 3600;
-      const theta = ((deg + 135) * Math.PI) / 180; // +135° desfase
-      const r = (this.innerRadius + this.radius) / 2; // radio para planetas
-      return { name, deg, x: r * Math.cos(theta), y: r * Math.sin(theta) };
+      // 1) calcula el índice del signo (0=Aries, 1=Tauro, …)
+      const signIndex = this.signs.indexOf(pos.sign);
+      // 2) lleva todo a grados absolutos desde 0° Aries
+      const totalDeg = signIndex * 30 + pos.deg + pos.min / 60 + pos.sec / 3600;
+
+      // conviertes a radianes
+      const degRad = (totalDeg * Math.PI) / 180;
+
+      // offset de rotación extra (30°)
+      const extraRotation = Math.PI +  Math.PI/2;
+
+      // inviertes el sentido restando y luego añades el offset
+      const theta = startAngle - degRad + extraRotation;
+
+      // 4) radio:
+      //    a) constante (en medio de los dos círculos)
+      // const r = (this.innerRadius + this.radius) / 2;
+
+      //    b) **dinámico** según el grado dentro del signo (opcional)
+      const fraction = (pos.deg + pos.min / 60 + pos.sec / 3600) / 30;
+      const r = this.innerRadius + fraction * (this.radius - this.innerRadius);
+
+      // 5) coordenadas finales
+      return {
+        name,
+        deg: totalDeg,
+        x: r * Math.cos(theta),
+        y: r * Math.sin(theta),
+      };
     });
 
     // 6) Dibujar líneas de aspecto
