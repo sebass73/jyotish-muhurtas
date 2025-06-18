@@ -21,22 +21,6 @@ export default class ZodiacChart {
       Plutón: "♇",
     };
 
-    // Lista de signos en orden zodiacal
-    // this.signs = [
-    //   "Aries",
-    //   "Tauro",
-    //   "Géminis",
-    //   "Cáncer",
-    //   "Leo",
-    //   "Virgo",
-    //   "Libra",
-    //   "Escorpio",
-    //   "Sagitario",
-    //   "Capricornio",
-    //   "Acuario",
-    //   "Piscis",
-    // ];
-
     // Colores para aspectos: conjunción/oposición rojo, trígono/sextil verde, cuadratura azul
     this.aspectColors = {
       conjunction: "#e74c3c",
@@ -53,17 +37,20 @@ export default class ZodiacChart {
     this.hovered = null;
 
     // Eventos para hover (desktop: mousemove, mouseleave; mobile: click, touchstart)
-    // this.canvas.addEventListener("mousemove", (e) => this._onMouseMove(e));
-    // this.canvas.addEventListener("mouseleave", () => this._onMouseLeave());
-    // this.canvas.addEventListener("click", (e) => this._onMouseMove(e));
-    // this.canvas.addEventListener("touchstart", (e) => {
-    //   const touch = e.touches[0];
-    //   this._onMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
-    //   e.preventDefault();
-    // });
-    this.canvas.addEventListener("pointermove", (e) => this._onPointer(e));
-    this.canvas.addEventListener("pointerdown", (e) => this._onPointer(e));
-    this.canvas.addEventListener("pointerleave", () => this._onPointerLeave());
+    this.canvas.addEventListener("mousemove", (e) => this._onMouseMove(e));
+    this.canvas.addEventListener("mouseleave", () => this._onMouseLeave());
+    this.canvas.addEventListener("click", (e) => this._onMouseMove(e));
+    this.canvas.addEventListener("touchstart", (e) => {
+      const touch = e.touches[0];
+      this._onMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
+      e.preventDefault();
+    });
+    this.canvas.addEventListener("pointermove", (e) => this._onMouseMove(e));
+    this.canvas.addEventListener("pointerleave", () => this._onMouseLeave());
+    this.canvas.addEventListener("pointerdown", (e) => this._onMouseMove(e));
+    this.canvas.addEventListener("pointerup", (e) => {
+      if (e.pointerType === "touch") this._onMouseLeave();
+    });
 
     // Redibuja si ventana cambia de tamaño
     window.addEventListener("resize", () => this.resizeAndDraw());
@@ -71,60 +58,34 @@ export default class ZodiacChart {
     // Primer render
     this.resizeAndDraw();
   }
-  _onPointer(e) {
+
+  _onMouseMove(e) {
     const rect = this.canvas.getBoundingClientRect();
-    const scale = window.devicePixelRatio || 1;
-    const x = (e.clientX - rect.left) * scale - this.size / 2;
-    const y = (e.clientY - rect.top) * scale - this.size / 2;
+    // 1) Coordenadas en CSS px, relativas al centro:
+    const x = e.clientX - rect.left - this.size / 2;
+    const y = e.clientY - rect.top - this.size / 2;
+
     let found = null;
+    // 2) Comparamos directamente con pt.x/pt.y (CSS px)
     for (const pt of this.pts) {
-      const dx = x - pt.x * scale;
-      const dy = y - pt.y * scale;
+      const dx = x - pt.x;
+      const dy = y - pt.y;
       if (Math.hypot(dx, dy) < 10) {
         found = pt;
         break;
       }
     }
+
     if (found !== this.hovered) {
       this.hovered = found;
-      // Redibuja solo el gráfico manteniendo dimensiones
-      this.draw(this.lastPositions);
+      this.resizeAndDraw(this.lastPositions);
     }
   }
 
-  _onPointerLeave() {
-    if (this.hovered) {
-      this.hovered = null;
-      this.draw(this.lastPositions);
-    }
+  _onMouseLeave() {
+    this.hovered = null;
+    this.resizeAndDraw(this.lastPositions);
   }
-
-  //   _onMouseMove(e) {
-  //     const rect = this.canvas.getBoundingClientRect();
-  //     const scale = window.devicePixelRatio || 1;
-  //     const x = (e.clientX - rect.left) * scale - this.size / 2;
-  //     const y = (e.clientY - rect.top) * scale - this.size / 2;
-
-  //     let found = null;
-  //     // Detecta si cursor sobre punto de planeta (10px)
-  //     for (const pt of this.pts) {
-  //       const dx = x - pt.x * scale;
-  //       const dy = y - pt.y * scale;
-  //       if (Math.hypot(dx, dy) < 10) {
-  //         found = pt;
-  //         break;
-  //       }
-  //     }
-  //     if (found !== this.hovered) {
-  //       this.hovered = found;
-  //       this.resizeAndDraw(this.lastPositions);
-  //     }
-  //   }
-
-  //   _onMouseLeave() {
-  //     this.hovered = null;
-  //     this.resizeAndDraw(this.lastPositions);
-  //   }
 
   resizeAndDraw(positions = this.lastPositions) {
     const rect = this.canvas.getBoundingClientRect();
