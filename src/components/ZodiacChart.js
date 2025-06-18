@@ -7,6 +7,12 @@ export default class ZodiacChart {
     this.canvas = document.getElementById(canvasId);
     this.ctx = this.canvas.getContext("2d");
 
+    // Detectar si el dispositivo es móvil (táctil)
+    this.isMobile =
+      window.matchMedia("(pointer: coarse)").matches ||
+      "ontouchstart" in window ||
+      navigator.maxTouchPoints > 0;
+
     // Mapeo de símbolos planetarios (Unicode)
     this.planetSymbols = {
       Sol: "☉",
@@ -191,25 +197,32 @@ export default class ZodiacChart {
       ctx.fill();
     });
 
-    // 8) Etiqueta hover (símbolo y nombre)
-    if (this.hovered) {
-      const pt = this.hovered;
-      const symbol = this.planetSymbols[pt.name] || "";
-      const text = `${symbol} ${pt.name}`;
-      ctx.font = "12px sans-serif";
-      ctx.textAlign = pt.x >= 0 ? "left" : "right";
-      ctx.textBaseline = "bottom";
-      const tx = pt.x + (pt.x >= 0 ? 8 : -8);
-      const ty = pt.y - 8;
-      const m = ctx.measureText(text);
-      // fondo
-      ctx.fillStyle = "rgba(255,255,255,0.9)";
-      ctx.fillRect(tx - (pt.x >= 0 ? 0 : m.width), ty - 14, m.width + 4, 18);
-      // texto
-      ctx.fillStyle = "#2c3e50";
-      ctx.fillText(text, tx, ty);
+    // 8) Etiquetas: en mobile todas, en desktop sólo hover
+    if (this.isMobile) {
+      this.pts.forEach((pt) => this._drawTooltip(pt));
+    } else if (this.hovered) {
+      this._drawTooltip(this.hovered);
     }
 
     ctx.restore();
+  }
+
+  // Dibuja etiqueta de planeta (símbolo y nombre)
+  _drawTooltip(pt) {
+    const ctx = this.ctx;
+    const symbol = this.planetSymbols[pt.name] || "";
+    const text = `${symbol} ${pt.name}`;
+    ctx.font = "12px sans-serif";
+    ctx.textAlign = pt.x >= 0 ? "left" : "right";
+    ctx.textBaseline = "bottom";
+    const tx = pt.x + (pt.x >= 0 ? 8 : -8);
+    const ty = pt.y - 8;
+    const m = ctx.measureText(text);
+    // fondo
+    ctx.fillStyle = "rgba(255,255,255,0.9)";
+    ctx.fillRect(tx - (pt.x >= 0 ? 0 : m.width), ty - 14, m.width + 4, 18);
+    // texto
+    ctx.fillStyle = "#2c3e50";
+    ctx.fillText(text, tx, ty);
   }
 }
