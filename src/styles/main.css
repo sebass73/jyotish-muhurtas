@@ -277,18 +277,6 @@ body {
   display: block;
 }
 
-/* Ajustes móviles */
-@media (max-width: 600px) {
-  .astro-table thead th,
-  .astro-table td {
-    padding: 0.5rem 0.25rem;
-    font-size: 0.75rem;
-  }
-  .zodiac-container {
-    max-width: 300px;
-  }
-}
-
 /* ————————————————————————————————  
    Responsive tweaks (móvil-first dentro de este bloque)
    ———————————————————————————————— */
@@ -351,5 +339,14 @@ body {
 
   .chart-container {
     aspect-ratio: 2 / 1;
+  }
+
+  .astro-table thead th,
+  .astro-table td {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.75rem;
+  }
+  .zodiac-container {
+    max-width: 300px;
   }
 }

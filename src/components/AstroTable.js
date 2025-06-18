@@ -1,10 +1,11 @@
-// src/components/AstroTable.js
-/**
- * Renderiza una tabla con iconos y datos de posiciones planetarias.
- * @param {string} containerId — id del div donde incrustar la tabla.
- * @param {object} astroPositions — objeto { Sol: {sign,deg,min,sec}, Luna:… }
- */
+import { T } from "../utils/i18n.js";
+
 export default function renderAstroTable(containerId, astroPositions) {
+  const lang = localStorage.getItem("lang") || "es";
+  const tr = T[lang].table;
+  const planetsNames = T[lang].planets;
+  const signNames = T[lang].signs;
+
   const container = document.getElementById(containerId);
   container.innerHTML = "";
 
@@ -36,31 +37,30 @@ export default function renderAstroTable(containerId, astroPositions) {
     Piscis: "♓",
   };
 
-  // Construcción de la tabla
   const table = document.createElement("table");
   table.classList.add("astro-table");
   table.innerHTML = `
     <thead>
       <tr>
-        <th>Planeta</th>
-        <th>Signo</th>
-        <th>Grados</th>
-        <th>Minutos</th>
-        <th>Segundos</th>
+        <th>${tr.planet}</th>
+        <th>${tr.sign}</th>
+        <th>${tr.degrees}</th>
+        <th>${tr.minutes}</th>
+        <th>${tr.seconds}</th>
       </tr>
     </thead>
     <tbody>
       ${Object.entries(astroPositions)
         .map(
-          ([planet, pos]) => `
+          ([pl, pos]) => `
         <tr>
           <td>
-            <span class="icon">${planetIcons[planet] || ""}</span>
-            ${planet}
+            <span class="icon">${planetIcons[pl] || ""}</span>
+            ${planetsNames[pl] || pl}
           </td>
           <td>
             <span class="icon">${signIcons[pos.sign] || ""}</span>
-            ${pos.sign}
+            ${signNames[pos.sign] || pos.sign}
           </td>
           <td>${pos.deg}</td>
           <td>${pos.min}</td>
