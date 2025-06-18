@@ -7,9 +7,21 @@
   </head>
   <body>
     <div id="app" class="container">
-      <!-- Título -->
-      <h1 data-i18n="title">Calculadora de Muhurtas</h1>
-
+      <div class="header-with-image">
+        <div class="header-text">
+          <h1 data-i18n="title">Calculadora de Muhurtas</h1>
+          <p class="app-legend">
+            🙏 Con profunda gratitud ofrezco esta herramienta, creada por
+            <strong>Sukhadeva Dharmanath</strong> al servicio de la Sangha
+            Dharma Nath. Que el conocimiento y la luz compartidos por Sadeva
+            Dharmanath iluminen el sendero de tu práctica y te guíen siempre con
+            amor y verdad.
+          </p>
+        </div>
+        <div class="header-image">
+          <img src="/images/natha_yoga_logo.jpg" alt="Sukhadeva Dharmanath" />
+        </div>
+      </div>
       <section class="init">
         <!-- Formulario de entrada -->
         <form id="saptaForm">
@@ -43,7 +55,9 @@
           <button id="darkToggle">🌙</button>
         </div>
       </section>
-
+      <div id="loader" class="loader hidden">
+        ⌛ <span data-i18n="loading">Calculando…</span>
+      </div>
       <!-- Loader y mensajes -->
       <!-- <div id="loader" class="hidden">
         ⌛ <span data-i18n="loading">Calculando…</span>
@@ -56,24 +70,38 @@
         <button id="copyLink" data-i18n="copyLink">Copiar enlace</button>
         <button id="exportCSV" data-i18n="exportCSV">Exportar CSV</button>
       </div> -->
+      <div id="results" class="hidden">
+        <!-- Muhurtas metadata -->
+        <div id="saptaMeta" class="sapta-meta"></div>
+        <!-- Contenedor de tarjetas -->
+        <div id="cards" class="cards"></div>
 
-      <!-- Muhurtas metadata -->
-      <div id="saptaMeta" class="sapta-meta"></div>
-      <!-- Contenedor de tarjetas -->
-      <div id="cards" class="cards"></div>
+        <!-- Diagrama circular -->
+        <h2 data-i18n="diagram">Reloj Solar</h2>
+        <div class="chart-container">
+          <!-- <canvas id="chart" width="600" height="400"></canvas> -->
+          <canvas id="chart" width="600" height="400"></canvas>
+        </div>
 
-      <!-- Diagrama circular -->
-      <h2 data-i18n="diagram">Reloj Solar</h2>
-      <div class="chart-container">
-        <!-- <canvas id="chart" width="600" height="400"></canvas> -->
-        <canvas id="chart" width="600" height="400"></canvas>
+        <!-- Mapa -->
+        <h2 data-i18n="map">Ubicación</h2>
+        <div id="map" style="height: 300px; border-radius: 8px"></div>
+
+        <!-- Tabla de posiciones zodiacales -->
+        <h2>Posiciones Planetarias</h2>
+        <!-- <div id="astroTable"></div> -->
+
+        <div class="table-responsive">
+          <div id="astroTable"></div>
+        </div>
+
+        <h2>Rueda Zodiacal</h2>
+        <!-- <canvas id="zodiacCanvas" width="400" height="400"></canvas> -->
+        <div class="zodiac-container">
+          <canvas id="zodiacCanvas"></canvas>
+        </div>
       </div>
-
-      <!-- Mapa -->
-      <h2 data-i18n="map">Ubicación</h2>
-      <div id="map" style="height: 300px; border-radius: 8px"></div>
     </div>
-
     <!-- Entry point JS -->
     <script type="module" src="/src/main.js"></script>
   </body>
