@@ -114,20 +114,25 @@ export default class ZodiacChart {
     const rect = this.canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
 
-    // 1) Ajusta el backing‐store a las dimensiones reales (CSS px × devicePixelRatio)
+    // — 1) Ajusta backing-store al tamaño real (CSS px × dpr)
     this.canvas.width = Math.round(rect.width * dpr);
     this.canvas.height = Math.round(rect.height * dpr);
 
-    // 2) Limpia y escala el contexto para pantallas retina
-    this.ctx.resetTransform();
+    // — 2) Resetea completamente la matriz de transformación
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+    // — 3) Limpia TODO el canvas en device-px
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    // — 4) Escala para retina / high-DPI
     this.ctx.scale(dpr, dpr);
 
-    // 3) Ahora rect.width === rect.height (por el aspect-ratio CSS)
+    // — 5) Vuelve a calcular tus medidas en CSS-px
     this.size = rect.width;
     this.radius = (this.size / 2) * 0.8;
     this.innerRadius = this.radius * 0.6;
 
-    // 4) Dibuja sólo si ya tienes posiciones
+    // — 6) Dibuja si ya tienes posiciones
     if (positions) this.draw(positions);
   }
 
