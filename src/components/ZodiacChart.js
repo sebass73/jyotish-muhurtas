@@ -2,18 +2,36 @@ import { T } from "../utils/i18n.js";
 
 export default class ZodiacChart {
   constructor(canvasId) {
+    // Idioma actual (por defecto 'es')
     const lang = localStorage.getItem("lang") || "es";
-    this.signs = Object.values(T[lang].signs);
+
+    // Aunque T[lang].signs contiene las traducciones, aquí forzamos siempre el orden zodiacal
+    // tal como lo usamos al parsear con toZodiacPosition (español con acentos) :contentReference[oaicite:3]{index=3}
+    this.zodiacOrder = [
+      "Aries",
+      "Tauro",
+      "Géminis",
+      "Cáncer",
+      "Leo",
+      "Virgo",
+      "Libra",
+      "Escorpio",
+      "Sagitario",
+      "Capricornio",
+      "Acuario",
+      "Piscis",
+    ];
+
     this.canvas = document.getElementById(canvasId);
     this.ctx = this.canvas.getContext("2d");
 
-    // Detectar si el dispositivo es móvil (táctil)
+    // Detectar si es móvil
     this.isMobile =
       window.matchMedia("(pointer: coarse)").matches ||
       "ontouchstart" in window ||
       navigator.maxTouchPoints > 0;
 
-    // Mapeo de símbolos planetarios (Unicode)
+    // Símbolos planetarios
     this.planetSymbols = {
       Sol: "☉",
       Luna: "☾",
@@ -27,7 +45,7 @@ export default class ZodiacChart {
       Plutón: "♇",
     };
 
-    // Colores para aspectos: conjunción/oposición rojo, trígono/sextil verde, cuadratura azul
+    // Colores de aspectos
     this.aspectColors = {
       conjunction: "#e74c3c",
       opposition: "#e74c3c",
@@ -38,53 +56,37 @@ export default class ZodiacChart {
       quincunx: "#9b59b6",
       sesquisquare: "#e67e22",
     };
+    this.orb = 5; // tolerancia de orbe
 
-    // Orbe de tolerancia en grados para detectar aspecto
-    this.orb = 5;
-
-    // Estado hover
     this.hovered = null;
 
-    // Eventos para hover (desktop: mousemove, mouseleave; mobile: click, touchstart)
+    // Eventos de interacción
     this.canvas.addEventListener("mousemove", (e) => this._onMouseMove(e));
     this.canvas.addEventListener("mouseleave", () => this._onMouseLeave());
     this.canvas.addEventListener("click", (e) => this._onMouseMove(e));
     this.canvas.addEventListener("touchstart", (e) => {
-      const touch = e.touches[0];
-      this._onMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
+      const t = e.touches[0];
+      this._onMouseMove({ clientX: t.clientX, clientY: t.clientY });
       e.preventDefault();
     });
-    this.canvas.addEventListener("pointermove", (e) => this._onMouseMove(e));
-    this.canvas.addEventListener("pointerleave", () => this._onMouseLeave());
-    this.canvas.addEventListener("pointerdown", (e) => this._onMouseMove(e));
-    this.canvas.addEventListener("pointerup", (e) => {
-      if (e.pointerType === "touch") this._onMouseLeave();
-    });
 
-    // Redibuja si ventana cambia de tamaño
     window.addEventListener("resize", () => this.resizeAndDraw());
 
-    // Primer render
+    // Dibujo inicial
     this.resizeAndDraw();
   }
 
   _onMouseMove(e) {
-    const rect = this.canvas.getBoundingClientRect();
-    // 1) Coordenadas en CSS px, relativas al centro:
-    const x = e.clientX - rect.left - this.size / 2;
-    const y = e.clientY - rect.top - this.size / 2;
-
+    const r = this.canvas.getBoundingClientRect();
+    const x = e.clientX - r.left - this.size / 2;
+    const y = e.clientY - r.top - this.size / 2;
     let found = null;
-    // 2) Comparamos directamente con pt.x/pt.y (CSS px)
     for (const pt of this.pts) {
-      const dx = x - pt.x;
-      const dy = y - pt.y;
-      if (Math.hypot(dx, dy) < 10) {
+      if (Math.hypot(x - pt.x, y - pt.y) < 10) {
         found = pt;
         break;
       }
     }
-
     if (found !== this.hovered) {
       this.hovered = found;
       this.resizeAndDraw(this.lastPositions);
@@ -96,43 +98,19 @@ export default class ZodiacChart {
     this.resizeAndDraw(this.lastPositions);
   }
 
-  // resizeAndDraw(positions = this.lastPositions) {
-  //   const rect = this.canvas.getBoundingClientRect();
-  //   const scale = window.devicePixelRatio || 1;
-  //   this.canvas.width = rect.width * scale;
-  //   this.canvas.height = rect.width * scale;
-  //   this.ctx.scale(scale, scale);
-
-  //   // Tamaño y radios
-  //   this.size = rect.width;
-  //   this.radius = (this.size / 2) * 0.8; // ajusta 0.8 para cambiar círculo exterior
-  //   this.innerRadius = this.radius * 0.6; // ajusta 0.6 para cambio círculo interior
-
-  //   if (positions) this.draw(positions);
-  // }
   resizeAndDraw(positions = this.lastPositions) {
     const rect = this.canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
-
-    // — 1) Ajusta backing-store al tamaño real (CSS px × dpr)
     this.canvas.width = Math.round(rect.width * dpr);
     this.canvas.height = Math.round(rect.height * dpr);
-
-    // — 2) Resetea completamente la matriz de transformación
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-    // — 3) Limpia TODO el canvas en device-px
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-    // — 4) Escala para retina / high-DPI
     this.ctx.scale(dpr, dpr);
 
-    // — 5) Vuelve a calcular tus medidas en CSS-px
     this.size = rect.width;
     this.radius = (this.size / 2) * 0.8;
     this.innerRadius = this.radius * 0.6;
 
-    // — 6) Dibuja si ya tienes posiciones
     if (positions) this.draw(positions);
   }
 
@@ -143,34 +121,33 @@ export default class ZodiacChart {
     ctx.save();
     ctx.translate(this.size / 2, this.size / 2);
 
-    // 1) Círculo exterior (eclíptica)
+    // 1) Círculo exterior
     ctx.beginPath();
     ctx.arc(0, 0, this.radius, 0, 2 * Math.PI);
-    ctx.strokeStyle = "#bdc3c7"; // color borde exterior
+    ctx.strokeStyle = "#bdc3c7";
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    // 2) Radios zodiacales: subdivide cada 30°
+    // 2) Radios zodiacales
     ctx.strokeStyle = "#bdc3c7";
     for (let i = 0; i < 12; i++) {
-      const angle = ((i * 30 - 90) * Math.PI) / 180;
+      const ang = ((i * 30 - 90) * Math.PI) / 180;
       ctx.beginPath();
       ctx.moveTo(0, 0);
-      ctx.lineTo(this.radius * Math.cos(angle), this.radius * Math.sin(angle));
+      ctx.lineTo(this.radius * Math.cos(ang), this.radius * Math.sin(ang));
       ctx.stroke();
     }
 
     // 3) Círculo interior
     ctx.beginPath();
     ctx.arc(0, 0, this.innerRadius, 0, 2 * Math.PI);
-    ctx.strokeStyle = "#bdc3c7";
     ctx.stroke();
 
     // 4) Etiquetas de signos
-    ctx.fillStyle = "#2c3e50"; // color etiquetas
+    ctx.fillStyle = "#2c3e50";
     ctx.font = "bold 12px sans-serif";
-    this.signs.forEach((sign, i) => {
-      const mid = ((i * 30 + 15 + 135) * Math.PI) / 180; // +135° para arco abajo-izq
+    this.zodiacOrder.forEach((sign, i) => {
+      const mid = ((i * 30 + 15 - 90) * Math.PI) / 180;
       const x = (this.radius + 20) * Math.cos(mid);
       const y = (this.radius + 20) * Math.sin(mid);
       ctx.save();
@@ -180,41 +157,16 @@ export default class ZodiacChart {
       ctx.restore();
     });
 
-    // 5) Calcula posiciones planetas
-    // 5) Cálculo de posiciones planetarias más “exacto”
-    // 1) El índice del signo con el que quieras empezar en “arriba”
-    const startSign = "Aries";
-    const startIndex = this.signs.indexOf(startSign);
-
-    // 2) Empuja todo el wheel para que ese signo quede en -π/2 (arriba)
-    //    (2π/12 radianes = 30° por signo)
-    const startAngle =
-      startIndex * ((2 * Math.PI) / this.signs.length) - Math.PI / 2;
-
+    // 5) Calculamos posición de cada planeta
     this.pts = Object.entries(astroPositions).map(([name, pos]) => {
-      // 1) calcula el índice del signo (0=Aries, 1=Tauro, …)
-      const signIndex = this.signs.indexOf(pos.sign);
-      // 2) lleva todo a grados absolutos desde 0° Aries
-      const totalDeg = signIndex * 30 + pos.deg + pos.min / 60 + pos.sec / 3600;
-
-      // conviertes a radianes
-      const degRad = (totalDeg * Math.PI) / 180;
-
-      // offset de rotación extra (30°)
-      const extraRotation = Math.PI + Math.PI / 2;
-
-      // inviertes el sentido restando y luego añades el offset
-      const theta = startAngle - degRad + extraRotation;
-
-      // 4) radio:
-      //    a) constante (en medio de los dos círculos)
-      // const r = (this.innerRadius + this.radius) / 2;
-
-      //    b) **dinámico** según el grado dentro del signo (opcional)
-      const fraction = (pos.deg + pos.min / 60 + pos.sec / 3600) / 30;
-      const r = this.innerRadius + fraction * (this.radius - this.innerRadius);
-
-      // 5) coordenadas finales
+      const idx = this.zodiacOrder.indexOf(pos.sign);
+      if (idx < 0) console.warn(`Signo desconocido: ${pos.sign}`);
+      const totalDeg = idx * 30 + pos.deg + pos.min / 60 + pos.sec / 3600;
+      // Convertir al sistema canvas: restamos 90° para poner 0° Aries arriba
+      const theta = (totalDeg * Math.PI) / 180 - Math.PI / 2;
+      // Radio proporcional al grado dentro del signo
+      const frac = (pos.deg + pos.min / 60 + pos.sec / 3600) / 30;
+      const r = this.innerRadius + frac * (this.radius - this.innerRadius);
       return {
         name,
         deg: totalDeg,
@@ -223,9 +175,7 @@ export default class ZodiacChart {
       };
     });
 
-    // ————— Aquí llamamos al “jitter” para separar solapamientos —————
-    this._separateOverlappingPoints();
-    // 6) Dibujar líneas de aspecto
+    // 6) Líneas de aspecto
     const aspects = {
       0: "conjunction",
       30: "semisextile",
@@ -240,12 +190,12 @@ export default class ZodiacChart {
       for (let j = i + 1; j < this.pts.length; j++) {
         let diff = Math.abs(this.pts[i].deg - this.pts[j].deg);
         diff = diff > 180 ? 360 - diff : diff;
-        for (const [angle, asp] of Object.entries(aspects)) {
-          if (Math.abs(diff - angle) <= this.orb) {
+        for (const ang in aspects) {
+          if (Math.abs(diff - ang) <= this.orb) {
             ctx.beginPath();
             ctx.moveTo(this.pts[i].x, this.pts[i].y);
             ctx.lineTo(this.pts[j].x, this.pts[j].y);
-            ctx.strokeStyle = this.aspectColors[asp]; // color según aspecto
+            ctx.strokeStyle = this.aspectColors[aspects[ang]];
             ctx.lineWidth = 1;
             ctx.stroke();
           }
@@ -253,7 +203,7 @@ export default class ZodiacChart {
       }
     }
 
-    // 7) Dibujar puntos planetas
+    // 7) Puntos planetarios
     this.pts.forEach((pt) => {
       ctx.beginPath();
       ctx.arc(pt.x, pt.y, 4, 0, 2 * Math.PI);
@@ -261,7 +211,7 @@ export default class ZodiacChart {
       ctx.fill();
     });
 
-    // 8) Etiquetas: en mobile todas, en desktop sólo hover
+    // 8) Etiquetas on-hover (o en móvil siempre)
     if (this.isMobile) {
       this.pts.forEach((pt) => this._drawTooltip(pt));
     } else if (this.hovered) {
@@ -271,46 +221,19 @@ export default class ZodiacChart {
     ctx.restore();
   }
 
-  _separateOverlappingPoints() {
-    // Agrupamos puntos por ángulo redondeado a 0.1°
-    const groups = new Map();
-    this.pts.forEach((pt) => {
-      const key = Math.round(pt.deg * 10);
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key).push(pt);
-    });
-
-    // Para cada grupo con más de un punto, distribuimos ±2°
-    groups.forEach((pts) => {
-      if (pts.length > 1) {
-        const span = (4 * Math.PI) / 180; // 4° en radianes
-        const baseTheta = pts[0].theta; // ángulo central
-        pts.forEach((pt, i) => {
-          const offset = span * (i / (pts.length - 1) - 0.5);
-          pt.theta = baseTheta + offset;
-          pt.x = pt.r * Math.cos(pt.theta);
-          pt.y = pt.r * Math.sin(pt.theta);
-        });
-      }
-    });
-  }
-
-  // Dibuja etiqueta de planeta (símbolo y nombre)
   _drawTooltip(pt) {
     const ctx = this.ctx;
-    const symbol = this.planetSymbols[pt.name] || "";
-    const text = `${symbol} ${pt.name}`;
+    const sym = this.planetSymbols[pt.name] || "";
+    const txt = `${sym} ${pt.name}`;
     ctx.font = "12px sans-serif";
     ctx.textAlign = pt.x >= 0 ? "left" : "right";
     ctx.textBaseline = "bottom";
     const tx = pt.x + (pt.x >= 0 ? 8 : -8);
     const ty = pt.y - 8;
-    const m = ctx.measureText(text);
-    // fondo
+    const m = ctx.measureText(txt);
     ctx.fillStyle = "rgba(255,255,255,0.9)";
     ctx.fillRect(tx - (pt.x >= 0 ? 0 : m.width), ty - 14, m.width + 4, 18);
-    // texto
     ctx.fillStyle = "#2c3e50";
-    ctx.fillText(text, tx, ty);
+    ctx.fillText(txt, tx, ty);
   }
 }
