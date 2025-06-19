@@ -34,10 +34,13 @@ export default class ZodiacChart {
       trine: "#2ecc71",
       sextile: "#2ecc71",
       square: "#3498db",
+      semisextile: "#f1c40f",
+      quincunx: "#9b59b6",
+      sesquisquare: "#e67e22",
     };
 
     // Orbe de tolerancia en grados para detectar aspecto
-    this.orb = 2;
+    this.orb = 5;
 
     // Estado hover
     this.hovered = null;
@@ -173,7 +176,7 @@ export default class ZodiacChart {
       const degRad = (totalDeg * Math.PI) / 180;
 
       // offset de rotación extra (30°)
-      const extraRotation = Math.PI +  Math.PI/2;
+      const extraRotation = Math.PI + Math.PI / 2;
 
       // inviertes el sentido restando y luego añades el offset
       const theta = startAngle - degRad + extraRotation;
@@ -195,12 +198,17 @@ export default class ZodiacChart {
       };
     });
 
+    // ————— Aquí llamamos al “jitter” para separar solapamientos —————
+    this._separateOverlappingPoints();
     // 6) Dibujar líneas de aspecto
     const aspects = {
       0: "conjunction",
+      30: "semisextile",
+      45: "sesquisquare",
       60: "sextile",
       90: "square",
       120: "trine",
+      150: "quincunx",
       180: "opposition",
     };
     for (let i = 0; i < this.pts.length; i++) {
@@ -223,7 +231,7 @@ export default class ZodiacChart {
     // 7) Dibujar puntos planetas
     this.pts.forEach((pt) => {
       ctx.beginPath();
-      ctx.arc(pt.x, pt.y, 6, 0, 2 * Math.PI);
+      ctx.arc(pt.x, pt.y, 4, 0, 2 * Math.PI);
       ctx.fillStyle = "#e74c3c";
       ctx.fill();
     });
@@ -236,6 +244,30 @@ export default class ZodiacChart {
     }
 
     ctx.restore();
+  }
+
+  _separateOverlappingPoints() {
+    // Agrupamos puntos por ángulo redondeado a 0.1°
+    const groups = new Map();
+    this.pts.forEach((pt) => {
+      const key = Math.round(pt.deg * 10);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(pt);
+    });
+
+    // Para cada grupo con más de un punto, distribuimos ±2°
+    groups.forEach((pts) => {
+      if (pts.length > 1) {
+        const span = (4 * Math.PI) / 180; // 4° en radianes
+        const baseTheta = pts[0].theta; // ángulo central
+        pts.forEach((pt, i) => {
+          const offset = span * (i / (pts.length - 1) - 0.5);
+          pt.theta = baseTheta + offset;
+          pt.x = pt.r * Math.cos(pt.theta);
+          pt.y = pt.r * Math.sin(pt.theta);
+        });
+      }
+    });
   }
 
   // Dibuja etiqueta de planeta (símbolo y nombre)
