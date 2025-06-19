@@ -96,18 +96,38 @@ export default class ZodiacChart {
     this.resizeAndDraw(this.lastPositions);
   }
 
+  // resizeAndDraw(positions = this.lastPositions) {
+  //   const rect = this.canvas.getBoundingClientRect();
+  //   const scale = window.devicePixelRatio || 1;
+  //   this.canvas.width = rect.width * scale;
+  //   this.canvas.height = rect.width * scale;
+  //   this.ctx.scale(scale, scale);
+
+  //   // Tamaño y radios
+  //   this.size = rect.width;
+  //   this.radius = (this.size / 2) * 0.8; // ajusta 0.8 para cambiar círculo exterior
+  //   this.innerRadius = this.radius * 0.6; // ajusta 0.6 para cambio círculo interior
+
+  //   if (positions) this.draw(positions);
+  // }
   resizeAndDraw(positions = this.lastPositions) {
     const rect = this.canvas.getBoundingClientRect();
-    const scale = window.devicePixelRatio || 1;
-    this.canvas.width = rect.width * scale;
-    this.canvas.height = rect.width * scale;
-    this.ctx.scale(scale, scale);
+    const dpr = window.devicePixelRatio || 1;
 
-    // Tamaño y radios
+    // 1) Ajusta el backing‐store a las dimensiones reales (CSS px × devicePixelRatio)
+    this.canvas.width = Math.round(rect.width * dpr);
+    this.canvas.height = Math.round(rect.height * dpr);
+
+    // 2) Limpia y escala el contexto para pantallas retina
+    this.ctx.resetTransform();
+    this.ctx.scale(dpr, dpr);
+
+    // 3) Ahora rect.width === rect.height (por el aspect-ratio CSS)
     this.size = rect.width;
-    this.radius = (this.size / 2) * 0.8; // ajusta 0.8 para cambiar círculo exterior
-    this.innerRadius = this.radius * 0.6; // ajusta 0.6 para cambio círculo interior
+    this.radius = (this.size / 2) * 0.8;
+    this.innerRadius = this.radius * 0.6;
 
+    // 4) Dibuja sólo si ya tienes posiciones
     if (positions) this.draw(positions);
   }
 
