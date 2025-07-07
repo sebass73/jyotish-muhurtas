@@ -10,6 +10,7 @@ export async function obtenerDatosSol(ciudad, pais, fechaISO) {
   // 1) Geocoding (mantén tu lógica actual si difiere)
   const geo = await axios.get("https://nominatim.openstreetmap.org/search", {
     params: { q: `${ciudad}, ${pais}`, format: "json", limit: 1 },
+    headers: { "User-Agent": "JyotishYogaApp/1.0" },
   });
   const lat = parseFloat(geo.data[0].lat);
   const lon = parseFloat(geo.data[0].lon);
