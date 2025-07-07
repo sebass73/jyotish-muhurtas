@@ -1,85 +1,89 @@
 import { obtenerDatosSol } from "./sunCalc";
 import { generarSaptaKrama } from "./saptaKrama";
-import { format, differenceInMinutes, isValid, parseISO } from "date-fns";
+import { differenceInMinutes } from "date-fns";
+import { DateTime } from "luxon";
 
-async function ejecutar(
-  ciudad = "Paola",
-  pais = "Italia",
-  fechaISO = new Date().toISOString().split("T")[0]
-) {
-  try {
-    if (!isValid(parseISO(fechaISO))) {
-      throw new Error("Fecha inválida. Usa el formato YYYY-MM-DD");
-    }
+export async function ejecutarJSON(ciudad, pais, fechaISO) {
+  (ciudad = ciudad), (pais = pais), (fechaISO = fechaISO);
 
-    const { timezone, sunriseLocal, sunsetLocal } = await obtenerDatosSol(
-      ciudad,
-      pais,
-      fechaISO
-    );
-    const diaSemana = format(sunriseLocal, "EEEE", { timeZone: timezone });
-    const arcoSol = differenceInMinutes(sunsetLocal, sunriseLocal);
-    const muhurtaDia = arcoSol / 12;
-    const muhurtaNoche = (1440 - arcoSol) / 12;
-
-    const { primerPlaneta, secuencia } = generarSaptaKrama(
-      sunriseLocal,
-      muhurtaDia,
-      diaSemana
-    );
-
-    return mostrarSalida(
-      ciudad,
-      pais,
-      fechaISO,
-      diaSemana,
-      sunriseLocal,
-      sunsetLocal,
-      arcoSol,
-      muhurtaDia,
-      muhurtaNoche,
-      primerPlaneta,
-      secuencia
-    );
-  } catch (err) {
-    console.error("❌ Error:", err.message);
-  }
-}
-
-export async function ejecutarJSON(
-  ciudad = "Paola",
-  pais = "Italia",
-  fechaISO = new Date().toISOString().split("T")[0]
-) {
-  if (!isValid(parseISO(fechaISO))) {
-    throw new Error("Fecha inválida. Usa el formato YYYY-MM-DD");
-  }
-  const { latitude, longitude, timezone, sunriseLocal, sunsetLocal } =
-    await obtenerDatosSol(ciudad, pais, fechaISO);
-  const diaSemana = format(sunriseLocal, "EEEE", { timeZone: timezone });
-  const arcoSol = differenceInMinutes(sunsetLocal, sunriseLocal);
-  const muhurtaDia = Math.round(arcoSol / 12);
-  const muhurtaNoche = Math.round((1440 - arcoSol) / 12);
-  const { primerPlaneta, secuencia } = generarSaptaKrama(
-    sunriseLocal,
-    arcoSol / 12,
-    diaSemana
+  console.log(
+    `Ejecutando con ciudad: ${ciudad}, país: ${pais}, fecha: ${fechaISO}`
   );
+  // 1) Datos del Sol (localización, sunrise/sunset, azimut y cardinales)
+  const {
+    latitude,
+    longitude,
+    timezone,
+    // sunriseTime,
+    // sunsetTime,
+    sunriseDate,
+    sunsetDate,
+    sunriseAzimuth,
+    sunriseDirection,
+    sunsetAzimuth,
+    sunsetDirection,
+  } = await obtenerDatosSol(ciudad, pais, fechaISO);
+
+  // 3) Día de la semana: a partir de la CADENA fechaISO en la zona local
+  const fechaDT = DateTime.fromISO(fechaISO, { zone: timezone }).setLocale(
+    "en"
+  ); // ó el locale que quieras
+  const diaSemana = fechaDT.toFormat("cccc");
+  console.log(`Día de la semana: ${diaSemana}`);
+
+  // 2) Cálculo de arco solar y muhûrtas
+  const arcoMin = differenceInMinutes(sunsetDate, sunriseDate);
+  const muhurtaDia = Math.round(arcoMin / 12);
+  const muhurtaNoche = Math.round((1440 - arcoMin) / 12);
+  const { primerPlaneta, secuencia: saptaKramaDia } = generarSaptaKrama(
+    sunriseDate,
+    arcoMin / 12,
+    diaSemana,
+    timezone
+  );
+
+  // ——— Generar los 12 muhurtas de la noche ———
+  const saptaKramaNoche = [];
+  for (let i = 0; i < 12; i++) {
+    const tStart = sunsetDate.getTime() + i * muhurtaNoche * 60000;
+    const tEnd = tStart + muhurtaNoche * 60000;
+    saptaKramaNoche.push({
+      muhurta: i + 1,
+      inicio: DateTime.fromMillis(tStart, { zone: timezone }).toFormat("HH:mm"),
+      fin: DateTime.fromMillis(tEnd, { zone: timezone }).toFormat("HH:mm"),
+    });
+  }
+
+  // 3) Construcción del JSON de salida
   return {
     ciudad,
     pais,
     fecha: fechaISO,
+    latitude,
+    longitude,
+    timezone,
     diaSemana,
-    sunrise: format(sunriseLocal, "HH:mm"),
-    sunset: format(sunsetLocal, "HH:mm"),
-    arcoSol,
+    sunrise: {
+      time: DateTime.fromJSDate(sunriseDate, { zone: timezone }).toFormat(
+        "HH:mm"
+      ),
+      azimuth: Math.round(sunriseAzimuth * 10) / 10,
+      direction: sunriseDirection,
+    },
+    sunset: {
+      time: DateTime.fromJSDate(sunsetDate, { zone: timezone }).toFormat(
+        "HH:mm"
+      ),
+      azimuth: Math.round(sunsetAzimuth * 10) / 10,
+      direction: sunsetDirection,
+    },
+    arcoSol: arcoMin,
     muhurtaDia,
     muhurtaNoche,
     primerPlaneta,
-    latitude,
-    longitude,
-    saptaKrama: secuencia,
+    saptaKramaDia,
+    saptaKramaNoche,
   };
 }
 
-export default { ejecutar, ejecutarJSON };
+export default { ejecutarJSON };

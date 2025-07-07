@@ -7,9 +7,8 @@ const app = express();
 app.use(cors());
 
 app.get("/sapta/json", async (req, res, next) => {
-  const { ciudad, pais } = req.query;
-  const fecha = req.query.fecha || new Date().toISOString().slice(0, 10);
-  if (!ciudad || !pais) {
+  const { ciudad, pais, fecha } = req.query;
+  if (!ciudad || !pais || !fecha) {
     return res
       .status(400)
       .json({ error: "ciudad, pais y fecha son requeridos" });
@@ -19,26 +18,48 @@ app.get("/sapta/json", async (req, res, next) => {
     const { obtenerDatosSol } = await import("./src/services/sunCalc.js");
     const { generarSaptaKrama } = await import("./src/services/saptaKrama.js");
 
-    const { latitude, longitude, timezone, sunriseLocal, sunsetLocal } =
-      await obtenerDatosSol(ciudad, pais, fecha);
-
-    const durMin = (sunsetLocal - sunriseLocal) / 12 / 60000;
+    // Datos del Sol con azimut y punto cardinal
+    const {
+      latitude,
+      longitude,
+      timezone,
+      sunriseDate,
+      sunsetDate,
+      sunriseAzimuth,
+      sunriseDirection,
+      sunsetAzimuth,
+      sunsetDirection,
+    } = await obtenerDatosSol(ciudad, pais, fecha);
+    
+    // Cálculo de muhûrtas
+    const durMin = (sunsetDate - sunriseDate) / 60000 / 12;
     const weekday = new Date(fecha).toLocaleString("en-US", {
       timeZone: timezone,
       weekday: "long",
     });
+    const saptaKrama = generarSaptaKrama(sunriseDate, durMin, weekday);
 
-    const saptaKrama = generarSaptaKrama(sunriseLocal, durMin, weekday);
-
+    // Respuesta JSON
     res.json({
-      fecha,
-      saptaKrama,
       ciudad,
       pais,
+      fecha,
       latitude,
       longitude,
-      sunrise: format(sunriseLocal, "HH:mm"),
-      sunset: format(sunsetLocal, "HH:mm"),
+      timezone,
+
+      sunrise: {
+        time: format(sunriseDate, "HH:mm"),
+        azimuth: Math.round(sunriseAzimuth * 10) / 10,
+        direction: sunriseDirection,
+      },
+      sunset: {
+        time: format(sunsetDate, "HH:mm"),
+        azimuth: Math.round(sunsetAzimuth * 10) / 10,
+        direction: sunsetDirection,
+      },
+
+      saptaKrama,
     });
   } catch (err) {
     next(err);

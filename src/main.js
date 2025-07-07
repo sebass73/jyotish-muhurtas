@@ -7,8 +7,9 @@ import Form from "./components/Form.js";
 import Cards from "./components/Cards.js";
 import ChartDisplay from "./components/ChartDisplay.js";
 import MapDisplay from "./components/MapDisplay.js";
-import renderAstroTable from "./components/AstroTable.js"; // Importar renderAstroTable
+import renderAstroTable from "./components/AstroTable.js";
 import ZodiacChart from "./components/ZodiacChart.js";
+import { drawAzimuths } from "./components/AzimuthDiagram.js";
 
 export default class MuhurtaApp {
   constructor() {
@@ -16,11 +17,12 @@ export default class MuhurtaApp {
     initDarkMode();
 
     this.form = new Form("#saptaForm");
-    this.cards = new Cards("#cards");
+    this.cards = new Cards("#cards", false);
+    this.cardsNight = new Cards("#cards-night", true);
     this.chart = new ChartDisplay("#chart");
     this.map = new MapDisplay("#map");
     this.metaDiv = document.getElementById("saptaMeta");
-    this.astroContainer = "astroTable"; // id del div para la tabla
+    this.astroContainer = "astroTable";
     this.lastData = null;
 
     this.translateUI();
@@ -32,8 +34,6 @@ export default class MuhurtaApp {
   bindEvents() {
     this.form.onSubmit(async (params) => {
       this._clearAll();
-      // this.chart.showLoading();
-
       this.results.classList.add("hidden");
       this.loader.classList.remove("hidden");
       try {
@@ -43,8 +43,6 @@ export default class MuhurtaApp {
       } catch (err) {
         this.form.showError(err.message);
       } finally {
-        // this.chart.hideLoading();
-        // 3) Siempre: oculta loader
         this.loader.classList.add("hidden");
       }
     });
@@ -77,24 +75,25 @@ export default class MuhurtaApp {
       sunrise,
       sunset,
       diaSemana,
-      arcoSol,
       latitude,
       longitude,
       ciudad,
       pais,
-      saptaKrama,
+      saptaKramaDia,
+      saptaKramaNoche,
       astroPositions,
+      timezone,
     } = this.lastData;
 
     this.cards.clear();
 
     // ——— Cálculos de minutos ———
-    const [h1, m1] = sunrise.split(":").map(Number);
-    const [h2, m2] = sunset.split(":").map(Number);
+    const [h1, m1] = sunrise.time.split(":").map(Number);
+    const [h2, m2] = sunset.time.split(":").map(Number);
     const t1 = new Date(0);
-    t1.setUTCHours(h1, m1, 0);
+    t1.setHours(h1, m1, 0);
     const t2 = new Date(0);
-    t2.setUTCHours(h2, m2, 0);
+    t2.setHours(h2, m2, 0);
     const arcoSolMin = Math.round((t2 - t1) / 60000);
     const diaMinutos = Math.round(arcoSolMin / 12);
     const nocheMinutos = Math.round((1440 - arcoSolMin) / 12);
@@ -102,15 +101,18 @@ export default class MuhurtaApp {
     // ——— Traducción de labels dinámicos ———
     const lang = localStorage.getItem("lang") || "es";
     const m = T[lang].meta;
-    const weekday = new Date(fecha)
-      .toLocaleDateString(lang, { weekday: "long" })
-      .replace(/^./, (c) => c.toUpperCase());
+    const dtf = new Intl.DateTimeFormat(lang, {
+      weekday: "long",
+      timeZone: timezone,
+    });
+    const rawWeekday = dtf.format(new Date(`${fecha}T00:00:00`));
+    const weekday = rawWeekday.charAt(0).toUpperCase() + rawWeekday.slice(1);
 
     // ——— Render metadata ———
     this.metaDiv.textContent =
       `🗓 ${m.day}: ${weekday}   ` +
-      `🌅 ${m.sunrise}: ${sunrise}   ` +
-      `🌇 ${m.sunset}: ${sunset}   ` +
+      `🌅 ${m.sunrise}: ${sunrise.time}   ` +
+      `🌇 ${m.sunset}: ${sunset.time}   ` +
       `☀️ ${m.solarArc}: ${arcoSolMin} min   ` +
       `🕒 ${m.daySlots}: ${diaMinutos} min   ` +
       `🌙 ${m.nightSlots}: ${nocheMinutos} min`;
@@ -118,16 +120,13 @@ export default class MuhurtaApp {
 
     // ——— Render tabla de efemérides zodiacales ———
     renderAstroTable(this.astroContainer, astroPositions);
-    // const zodiac = new ZodiacChart("zodiacCanvas");
-    // zodiac.draw(astroPositions);
 
     // ——— Render cards, gráfico y mapa ———
-    this.cards.render(saptaKrama);
-    this.chart.update(saptaKrama);
+    this.cards.render(saptaKramaDia);
+    this.chart.update(saptaKramaDia);
+    this.cardsNight.clear();
+    this.cardsNight.render(saptaKramaNoche);
     this.map.update(latitude, longitude, ciudad, pais);
-
-    // 4) Finalmente, muestra la sección de resultados
-    // this.results.classList.remove("hidden");
 
     // 1) Map y rueda: muévelos tras hacer visibles los contenedores
     this.results.classList.remove("hidden");
@@ -136,6 +135,14 @@ export default class MuhurtaApp {
     if (this.map.map && typeof this.map.map.invalidateSize === "function") {
       this.map.map.invalidateSize();
     }
+
+    // Dibuja diagrama de azimuts
+    drawAzimuths({
+      sunriseAz: sunrise.azimuth,
+      sunriseDir: sunrise.direction,
+      sunsetAz: sunset.azimuth,
+      sunsetDir: sunset.direction,
+    });
 
     // 3) Rueda zodiacal — redibuja sabiendo ya su tamaño real
     const zodiac = new ZodiacChart("zodiacCanvas");
@@ -150,6 +157,7 @@ export default class MuhurtaApp {
     this.map.clear?.();
     // limpio tabla de efemérides
     document.getElementById(this.astroContainer).innerHTML = "";
+    document.getElementById("azimuth-container").innerHTML = "";
   }
 }
 

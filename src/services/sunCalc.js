@@ -1,40 +1,47 @@
 import axios from "axios";
 import tzlookup from "tz-lookup";
-import { parseISO } from "date-fns";
+import SunCalc from "suncalc";
+import { DateTime } from "luxon";
 
 /**
- * Geocodifica y obtiene sunrise/sunset en hora local
+ * Geocodifica y obtiene datos solares con azimut y dirección cardinal
  */
 export async function obtenerDatosSol(ciudad, pais, fechaISO) {
-  // 1) Geocoding con Nominatim
-  const geoRes = await axios.get("https://nominatim.openstreetmap.org/search", {
+  // 1) Geocoding (mantén tu lógica actual si difiere)
+  const geo = await axios.get("https://nominatim.openstreetmap.org/search", {
     params: { q: `${ciudad}, ${pais}`, format: "json", limit: 1 },
-    headers: { "User-Agent": "JyotishYogaApp/1.0" },
   });
-  if (!geoRes.data?.length) throw new Error("No se encontró la localización");
-  const latitude = parseFloat(geoRes.data[0].lat);
-  const longitude = parseFloat(geoRes.data[0].lon);
-  const timezone = tzlookup(latitude, longitude);
+  const lat = parseFloat(geo.data[0].lat);
+  const lon = parseFloat(geo.data[0].lon);
+  const zone = tzlookup(lat, lon);
 
-  // 2) Sunrise-Sunset API
-  const sunRes = await axios.get("https://api.sunrise-sunset.org/json", {
-    params: { lat: latitude, lng: longitude, date: fechaISO, formatted: 0 },
-  });
-  const results = sunRes.data?.results;
-  if (!results?.sunrise || !results?.sunset)
-    throw new Error("No se obtuvieron amanecer/atardecer");
+  // 2) Calcular amanecer/atardecer
+  const d = DateTime.fromISO(fechaISO, { zone }).toJSDate();
+  const times = SunCalc.getTimes(d, lat, lon);
 
-  // Parse UTC times
-  const sunriseUTC = parseISO(results.sunrise);
-  const sunsetUTC = parseISO(results.sunset);
+  // 3) Posición y azimut
+  const sunriseDT = DateTime.fromJSDate(times.sunrise, { zone });
+  const sunsetDT = DateTime.fromJSDate(times.sunset, { zone });
+  const risePos = SunCalc.getPosition(times.sunrise, lat, lon);
+  const setPos = SunCalc.getPosition(times.sunset, lat, lon);
+  const toDeg = (r) => ((r * 180) / Math.PI + 180) % 360;
+  const azRise = toDeg(risePos.azimuth);
+  const azSet = toDeg(setPos.azimuth);
+  // 4) Punto cardinal
+  const dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+  const cardinal = (deg) => dirs[Math.round(deg / 45) % 8];
 
-  // Convertir a zona local
-  const sunriseLocal = new Date(
-    sunriseUTC.toLocaleString("en-US", { timeZone: timezone })
-  );
-  const sunsetLocal = new Date(
-    sunsetUTC.toLocaleString("en-US", { timeZone: timezone })
-  );
-
-  return { latitude, longitude, timezone, sunriseLocal, sunsetLocal };
+  return {
+    latitude: lat,
+    longitude: lon,
+    timezone: zone,
+    sunriseTime: sunriseDT.toFormat("HH:mm"),
+    sunsetTime: sunsetDT.toFormat("HH:mm"),
+    sunriseDate: sunriseDT.toJSDate(),
+    sunsetDate: sunsetDT.toJSDate(),
+    sunriseAzimuth: azRise,
+    sunriseDirection: cardinal(azRise),
+    sunsetAzimuth: azSet,
+    sunsetDirection: cardinal(azSet),
+  };
 }

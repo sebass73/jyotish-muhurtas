@@ -21,9 +21,7 @@ export async function fetchEclLon(id, startTime, stopTime) {
     `&START_TIME='${startTime}'` +
     `&STOP_TIME='${stopTime}'` +
     `&QUANTITIES='31'`;
-  console.log("Horizons URL:", url);
   const res = await axios.get(url, { responseType: "text" });
-  console.log("Horizons response:", res.data);
   const line = res.data
     .split("\n")
     .find((l) => /^\s*\d{4}-[A-Za-z]{3}-\d{2}/.test(l));

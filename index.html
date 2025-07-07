@@ -72,9 +72,13 @@
       </div> -->
       <div id="results" class="hidden">
         <!-- Muhurtas metadata -->
+        <h2 data-i18n="daySummary">Resumen del Dia</h2>
         <div id="saptaMeta" class="sapta-meta"></div>
         <!-- Contenedor de tarjetas -->
+        <h2 data-i18n="dayMuhurtas">Muhurtas del día</h2>
         <div id="cards" class="cards"></div>
+        <h2 data-i18n="nightMuhurtas">Muhurtas de la noche</h2>
+        <div id="cards-night" class="cards"></div>
 
         <!-- Diagrama circular -->
         <h2 data-i18n="diagram">Reloj Solar</h2>
@@ -83,9 +87,18 @@
           <canvas id="chart" width="600" height="400"></canvas>
         </div>
 
-        <!-- Mapa -->
-        <h2 data-i18n="map">Ubicación</h2>
-        <div id="map" style="height: 300px; border-radius: 8px"></div>
+        <!-- Diagrama de azimut -->
+        <h2 class="diagram-title" data-i18n="azimuthTitle">
+          Dirección del Sol
+        </h2>
+        <div id="azimuth-container"></div>
+        <p class="diagram-legend">
+          • <span class="legend-red" data-i18n="legendRed"></span>:
+          <span data-i18n="legendSunrise"></span>
+          • <span class="legend-blue" data-i18n="legendBlue"></span>:
+          <span data-i18n="legendSunset"></span>
+          • <span data-i18n="legendArc"></span>
+        </p>
 
         <!-- Tabla de posiciones zodiacales -->
         <h2 data-i18n="planetaryPositions">Posiciones Planetarias</h2>
@@ -100,6 +113,10 @@
         <div class="zodiac-container">
           <canvas id="zodiacCanvas"></canvas>
         </div>
+
+        <!-- Mapa -->
+        <h2 data-i18n="map">Ubicación</h2>
+        <div id="map" style="height: 300px; border-radius: 8px"></div>
       </div>
     </div>
     <!-- Entry point JS -->

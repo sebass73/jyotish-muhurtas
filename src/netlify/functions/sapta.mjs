@@ -2,22 +2,27 @@ import { ejecutarJSON } from "../../services/core.js";
 import { fetchEclLon, toZodiacPosition } from "../../services/horizons.js";
 import tzlookup from "tz-lookup";
 import { DateTime } from "luxon";
+import { obtenerDatosSol } from "../../services/sunCalc.js";
 
 export const handler = async (event) => {
   const params = event.queryStringParameters || {};
+  const { ciudad, pais, fecha } = params;
   try {
-    const data = await ejecutarJSON(params.ciudad, params.pais, params.fecha);
+    // 1) Base: muhûrtas, posiciones eclípticas, etc.
+    const base = await ejecutarJSON(ciudad, pais, fecha);
+    // 2) Azimuts de Sol con SunCalc
+    const sol = await obtenerDatosSol(ciudad, pais, fecha);
+    base.sunrise.azimuth = sol.sunriseAzimuth;
+    base.sunrise.direction = sol.sunriseDirection;
+    base.sunset.azimuth = sol.sunsetAzimuth;
+    base.sunset.direction = sol.sunsetDirection;
 
-    // Zona local
-    const timezone = tzlookup(data.latitude, data.longitude);
-    const nowLocal = DateTime.now().setZone(timezone);
-
-    const nowUtc = nowLocal.toUTC(); // pasa a “2025-Jun-19T14:42:…” UTC
-    const plusOneMin = nowUtc.plus({ minutes: 1 }); // intervalo de 1 minuto
-
-    const fmt = (d) => d.toFormat("yyyy-LLL-dd HH:mm"); // e.g. "2025-Jun-19 14:42"
-    const startStr = fmt(nowUtc);
-    const stopStr = fmt(plusOneMin);
+    // 3) Posiciones planetarias (Horizons) --- lógica original
+    const timezone = tzlookup(base.latitude, base.longitude);
+    const nowLocal = DateTime.fromISO(`${fecha}T00:00:00`, { zone: timezone });
+    const nowUtc = nowLocal.toUTC();
+    const startStr = nowUtc.toFormat("yyyy-LLL-dd HH:mm");
+    const stopStr = nowUtc.plus({ minutes: 1 }).toFormat("yyyy-LLL-dd HH:mm");
 
     const bodies = {
       Sol: "10",
@@ -31,29 +36,21 @@ export const handler = async (event) => {
       Neptuno: "899",
       Plutón: "999",
     };
-
-    // 3) Consumir Horizons y convertir a DMS + signo
-    const positions = {};
-
+    const astro = {};
     for (const [name, id] of Object.entries(bodies)) {
       const dec = await fetchEclLon(id, startStr, stopStr);
-      positions[name] = toZodiacPosition(dec);
+      astro[name] = toZodiacPosition(dec);
     }
-
-    // 4) Devolver todo en el JSON
+    // 4) Devolver todo junto
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...data,
-        astroPositions: positions,
-      }),
+      body: JSON.stringify({ ...base, astroPositions: astro }),
     };
-  } catch (err) {
+  } catch (error) {
     return {
       statusCode: 400,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ error: err.message }),
+      body: JSON.stringify({ error: error.message }),
     };
   }
 };

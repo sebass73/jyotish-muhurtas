@@ -281,6 +281,30 @@ body {
   height: 100% !important; /* ahora ocupa todo el contenedor cuadrado */
 }
 
+/* Contenedor del diagrama (ya lo tenías) */
+#azimuth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: visible;
+  margin-bottom: 2rem;
+  min-height: 280px;
+}
+
+.diagram-legend {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #444;
+  margin-top: 0.5rem;
+  line-height: 1.4;
+}
+.diagram-legend .legend-red {
+  color: red;
+}
+.diagram-legend .legend-blue {
+  color: blue;
+}
+
 /* ————————————————————————————————  
    Responsive tweaks (móvil-first dentro de este bloque)
    ———————————————————————————————— */
@@ -349,6 +373,7 @@ body {
   .astro-table td {
     padding: 0.5rem 0.25rem;
     font-size: 0.75rem;
+    text-align: center;
   }
   .zodiac-container {
     max-width: 300px;
