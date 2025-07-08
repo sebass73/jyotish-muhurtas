@@ -12,15 +12,22 @@ export function drawAzimuths({ sunriseAz, sunsetAz, sunriseDir, sunsetDir }) {
   const container = document.getElementById("azimuth-container");
   container.innerHTML = "";
 
+  // — detecta si estamos en dark mode como en ChartDisplay —
+  const isDark = document.documentElement.classList.contains("dark");
+  // Colores dinámicos:
+  const AXIS_CLR = isDark ? "#555" : "#ccc";
+  const CIRCLE_CLR = isDark ? "#ddd" : "#333";
+  const TEXT_CLR = isDark ? "#eee" : "#666";
+  const ARROW_RED = isDark ? "#ff8080" : "red";
+  const ARROW_BLUE = isDark ? "#80b3ff" : "blue";
+
   // --- CONFIGURACIÓN BÁSICA (personalízalas a tu gusto) ---
   const SIZE = 250; // ancho / alto total del SVG
   const RADIUS = 100; // radio del círculo principal
   const AXIS_D = 1; // grosor de las líneas de eje punteado
-  const AXIS_CLR = "#ccc"; // color de ejes
   const CIRCLE_W = 2; // grosor del círculo base
   const ARROW_W = 2; // grosor de las flechas
   const MARKER_S = 3; // tamaño de la punta de flecha
-  const FONT_CLR = "#666"; // color de texto de ejes
   const FONT_SZ = 14; // tamaño de texto de etiquetas cardinales
   const LABEL_O = 12; // margen radial para N/E/S/W
   const DEG_SZ = 12; // tamaño de texto de grados
@@ -81,7 +88,7 @@ export function drawAzimuths({ sunriseAz, sunsetAz, sunriseDir, sunsetDir }) {
     const text = document.createElementNS(svgNS, "text");
     text.setAttribute("x", lx);
     text.setAttribute("y", ly);
-    text.setAttribute("fill", FONT_CLR);
+    text.setAttribute("fill", TEXT_CLR);
     text.setAttribute("font-size", FONT_SZ);
     text.setAttribute("font-weight", "bold");
     text.setAttribute("text-anchor", "middle");
@@ -95,7 +102,7 @@ export function drawAzimuths({ sunriseAz, sunsetAz, sunriseDir, sunsetDir }) {
   circle.setAttribute("cx", 0);
   circle.setAttribute("cy", 0);
   circle.setAttribute("r", RADIUS);
-  circle.setAttribute("stroke", "#333");
+  circle.setAttribute("stroke", CIRCLE_CLR);
   circle.setAttribute("stroke-width", CIRCLE_W);
   circle.setAttribute("fill", "none");
   svg.appendChild(circle);
@@ -129,7 +136,10 @@ export function drawAzimuths({ sunriseAz, sunsetAz, sunriseDir, sunsetDir }) {
     line.setAttribute("y1", 0);
     line.setAttribute("x2", 0);
     line.setAttribute("y2", -RADIUS + 10);
-    line.setAttribute("stroke", colorId === "arrow-red" ? "red" : "blue");
+    line.setAttribute(
+      "stroke",
+      colorId === "arrow-red" ? ARROW_RED : ARROW_BLUE
+    );
     line.setAttribute("stroke-width", ARROW_W);
     line.setAttribute("marker-end", `url(#${colorId})`);
     line.setAttribute("transform", `rotate(${az})`);
@@ -149,7 +159,8 @@ export function drawAzimuths({ sunriseAz, sunsetAz, sunriseDir, sunsetDir }) {
     const text = document.createElementNS(svgNS, "text");
     text.setAttribute("x", tx);
     text.setAttribute("y", ty);
-    text.setAttribute("fill", colorId === "arrow-red" ? "red" : "blue");
+    const fillColor = colorId === "arrow-red" ? ARROW_RED : ARROW_BLUE;
+    text.setAttribute("fill", fillColor);
     text.setAttribute("font-size", DEG_SZ);
     text.setAttribute("font-weight", "bold");
     text.setAttribute("text-anchor", tx >= 0 ? "start" : "end");

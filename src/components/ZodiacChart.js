@@ -3,7 +3,7 @@ import { T } from "../utils/i18n.js";
 export default class ZodiacChart {
   constructor(canvasId) {
     // Idioma actual (por defecto 'es')
-    const lang = localStorage.getItem("lang") || "es";
+    // const lang = localStorage.getItem("lang") || "es";
 
     // Aunque T[lang].signs contiene las traducciones, aquí forzamos siempre el orden zodiacal
     // tal como lo usamos al parsear con toZodiacPosition (español con acentos) :contentReference[oaicite:3]{index=3}
@@ -121,6 +121,9 @@ export default class ZodiacChart {
     ctx.save();
     ctx.translate(this.size / 2, this.size / 2);
 
+    const lang = localStorage.getItem("lang") || "es";
+    const { signs: signNames, planets: planetNames } = T[lang];
+
     // 1) Círculo exterior
     ctx.beginPath();
     ctx.arc(0, 0, this.radius, 0, 2 * Math.PI);
@@ -144,16 +147,19 @@ export default class ZodiacChart {
     ctx.stroke();
 
     // 4) Etiquetas de signos
-    ctx.fillStyle = "#2c3e50";
+    const isDark = document.documentElement.classList.contains("dark");
+    const textColor = isDark ? "#e0e0e0" : "#2c3e50";
+    ctx.fillStyle = textColor;
     ctx.font = "bold 12px sans-serif";
     this.zodiacOrder.forEach((sign, i) => {
+      const label = signNames[sign] || sign;
       const mid = ((i * 30 + 15 - 90) * Math.PI) / 180;
       const x = (this.radius + 20) * Math.cos(mid);
       const y = (this.radius + 20) * Math.sin(mid);
       ctx.save();
       ctx.translate(x, y);
       ctx.rotate(mid + Math.PI / 2);
-      ctx.fillText(sign, 0, 0);
+      ctx.fillText(label, 0, 0);
       ctx.restore();
     });
 
@@ -213,18 +219,19 @@ export default class ZodiacChart {
 
     // 8) Etiquetas on-hover (o en móvil siempre)
     if (this.isMobile) {
-      this.pts.forEach((pt) => this._drawTooltip(pt));
+      this.pts.forEach((pt) => this._drawTooltip(pt, planetNames));
     } else if (this.hovered) {
-      this._drawTooltip(this.hovered);
+      this._drawTooltip(this.hovered, planetNames);
     }
 
     ctx.restore();
   }
 
-  _drawTooltip(pt) {
+  _drawTooltip(pt, planetNames) {
     const ctx = this.ctx;
     const sym = this.planetSymbols[pt.name] || "";
-    const txt = `${sym} ${pt.name}`;
+    const name = planetNames[pt.name] || pt.name;
+    const txt = `${sym} ${name}`;
     ctx.font = "12px sans-serif";
     ctx.textAlign = pt.x >= 0 ? "left" : "right";
     ctx.textBaseline = "bottom";

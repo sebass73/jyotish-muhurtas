@@ -10,6 +10,11 @@ import MapDisplay from "./components/MapDisplay.js";
 import renderAstroTable from "./components/AstroTable.js";
 import ZodiacChart from "./components/ZodiacChart.js";
 import { drawAzimuths } from "./components/AzimuthDiagram.js";
+import flatpickr from "flatpickr";
+import { Spanish } from "flatpickr/dist/l10n/es.js";
+import English from "flatpickr/dist/l10n/default.js";
+import { Italian } from "flatpickr/dist/l10n/it.js";
+import "flatpickr/dist/flatpickr.min.css";
 
 export default class MuhurtaApp {
   constructor() {
@@ -26,9 +31,26 @@ export default class MuhurtaApp {
     this.lastData = null;
 
     this.translateUI();
+    this.initDatePicker();
     this.loader = document.getElementById("loader");
     this.results = document.getElementById("results");
     this.bindEvents();
+
+    window.addEventListener("themeChange", () => {
+      if (this.lastData) {
+        // Redibuja el diagrama SVG con colores actualizados
+        drawAzimuths({
+          sunriseAz: this.lastData.sunrise.azimuth,
+          sunriseDir: this.lastData.sunrise.direction,
+          sunsetAz: this.lastData.sunset.azimuth,
+          sunsetDir: this.lastData.sunset.direction,
+        });
+        this.chart.update(this.lastData.saptaKramaDia);
+      }
+      if (this.zodiac) {
+        this.zodiac.resizeAndDraw(this.lastData.astroPositions);
+      }
+    });
   }
 
   bindEvents() {
@@ -50,6 +72,7 @@ export default class MuhurtaApp {
     document.getElementById("lang").addEventListener("change", (e) => {
       localStorage.setItem("lang", e.target.value);
       this.translateUI();
+      this.initDatePicker();
       if (this.lastData) this.renderContent();
     });
   }
@@ -66,6 +89,27 @@ export default class MuhurtaApp {
     });
     document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
       el.placeholder = t[el.getAttribute("data-i18n-placeholder")];
+    });
+  }
+
+  initDatePicker() {
+    const lang = localStorage.getItem("lang") || "es";
+    const locales = { es: Spanish, en: English, it: Italian };
+
+    // Flatpickr sobre el #fecha
+    flatpickr("#fecha", {
+      locale: locales[lang] || Spanish,
+      dateFormat: "Y-m-d", // valor que envía al servidor (YYYY-MM-DD)
+      altInput: true,
+      altFormat: "d/m/Y", // formato visible en la UI
+      allowInput: true,
+      defaultDate: new Date(),
+      prevArrow: "‹",
+      nextArrow: "›",
+      // Si quisieras manejar cambios manuales:
+      onChange: ([d]) => {
+        // por defecto Form lee el value de #fecha en formato Y-m-d
+      },
     });
   }
 
@@ -145,8 +189,12 @@ export default class MuhurtaApp {
     });
 
     // 3) Rueda zodiacal — redibuja sabiendo ya su tamaño real
-    const zodiac = new ZodiacChart("zodiacCanvas");
-    zodiac.resizeAndDraw(this.lastData.astroPositions);
+    // const zodiac = new ZodiacChart("zodiacCanvas");
+    // zodiac.resizeAndDraw(this.lastData.astroPositions);
+    if (!this.zodiac) {
+      this.zodiac = new ZodiacChart("zodiacCanvas");
+    }
+    this.zodiac.resizeAndDraw(this.lastData.astroPositions);
   }
 
   _clearAll() {

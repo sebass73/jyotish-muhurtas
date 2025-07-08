@@ -41,8 +41,15 @@
           />
           <label for="fecha">
             <span data-i18n="labelDate">Fecha</span>
-            <input type="date" id="fecha" name="fecha" required />
+            <input
+              id="fecha"
+              name="fecha"
+              placeholder="DD/MM/AAAA"
+              data-input
+              readonly
+            />
           </label>
+
           <button type="submit" data-i18n="calc">Calcular</button>
         </form>
         <!-- Controles: idioma y modo oscuro -->
@@ -58,18 +65,12 @@
       <div id="loader" class="loader hidden">
         ⌛ <span data-i18n="loading">Calculando…</span>
       </div>
-      <!-- Loader y mensajes -->
-      <!-- <div id="loader" class="hidden">
-        ⌛ <span data-i18n="loading">Calculando…</span>
-      </div>
-      <div id="errorBox" class="alert error hidden"></div>
-      <div id="successBox" class="alert success hidden"></div> -->
 
       <!-- Acciones: copiar enlace y exportar CSV -->
-      <!-- <div id="actions" class="actions hidden">
+      <div id="actions" class="actions hidden">
         <button id="copyLink" data-i18n="copyLink">Copiar enlace</button>
         <button id="exportCSV" data-i18n="exportCSV">Exportar CSV</button>
-      </div> -->
+      </div>
       <div id="results" class="hidden">
         <!-- Muhurtas metadata -->
         <h2 data-i18n="daySummary">Resumen del Dia</h2>
