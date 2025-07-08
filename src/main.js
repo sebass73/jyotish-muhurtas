@@ -81,14 +81,28 @@ export default class MuhurtaApp {
     const lang = localStorage.getItem("lang") || "es";
     const t = T[lang];
 
+    // título de la pestaña
     document.title = t.title;
     document.querySelector("h1").textContent = t.title;
 
-    document.querySelectorAll("[data-i18n]").forEach((el) => {
-      el.textContent = t[el.getAttribute("data-i18n")];
+    // 1) primero los que llevan HTML
+    document.querySelectorAll("[data-i18n-html]").forEach((el) => {
+      const key = el.getAttribute("data-i18n-html");
+      el.innerHTML = t[key] || "";
     });
+
+    // 2) luego los que son solo texto
+    document
+      .querySelectorAll("[data-i18n]:not([data-i18n-html])")
+      .forEach((el) => {
+        const key = el.getAttribute("data-i18n");
+        el.textContent = t[key] || "";
+      });
+
+    // 3) placeholders
     document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
-      el.placeholder = t[el.getAttribute("data-i18n-placeholder")];
+      const key = el.getAttribute("data-i18n-placeholder");
+      el.placeholder = t[key] || "";
     });
   }
 

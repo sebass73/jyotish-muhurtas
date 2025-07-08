@@ -1,6 +1,13 @@
 export const T = {
   es: {
     title: "Calculadora de Muhurtas",
+    "app-legend": `
+      🙏 Con profunda gratitud ofrezco esta herramienta, creada por
+      <strong>Sukhadeva Dharmanath</strong> al servicio de la Sangha
+      Dharma Nath. Que el conocimiento y la luz compartidos por Sadeva
+      Dharmanath iluminen el sendero de tu práctica y te guíen siempre con
+      amor y verdad.
+    `,
     city: "Ciudad",
     country: "País",
     calc: "Calcular",
@@ -63,6 +70,13 @@ export const T = {
   },
   en: {
     title: "Muhurtas Calculator",
+    "app-legend": `
+      🙏 With deep gratitude I offer this tool, created by
+      <strong>Sukhadeva Dharmanath</strong> in service of the Sangha
+      Dharma Nath. May the knowledge and light shared by Sadeva
+      Dharmanath illuminate your practice and always guide you with
+      love and truth.
+    `,
     city: "City",
     country: "Country",
     calc: "Calculate",
@@ -125,6 +139,13 @@ export const T = {
   },
   it: {
     title: "Calcolatore di Muhurta",
+    "app-legend": `
+      🙏 Con profonda gratitudine offro questo strumento, creato da
+      <strong>Sukhadeva Dharmanath</strong> al servizio della Sangha
+      Dharma Nath. Che la conoscenza e la luce condivise da Sadeva
+      Dharmanath illuminino il tuo cammino e ti guidino sempre con
+      amore e verità.
+    `,
     city: "Città",
     country: "Paese",
     calc: "Calcola",
@@ -189,21 +210,40 @@ export const T = {
 
 export function initI18n() {
   let lang = localStorage.getItem("lang") || "es";
+
   const apply = () => {
+    // título de la pestaña
     document.title = T[lang].title;
-    document.querySelectorAll("[data-i18n]").forEach((el) => {
-      el.textContent = T[lang][el.getAttribute("data-i18n")];
+
+    // primero los que llevan HTML
+    document.querySelectorAll("[data-i18n-html]").forEach((el) => {
+      const key = el.getAttribute("data-i18n-html");
+      el.innerHTML = T[lang][key] || "";
     });
+
+    // luego los que son solo texto
+    document
+      .querySelectorAll("[data-i18n]:not([data-i18n-html])")
+      .forEach((el) => {
+        const key = el.getAttribute("data-i18n");
+        el.textContent = T[lang][key] || "";
+      });
+
+    // placeholders
     document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
-      el.placeholder = T[lang][el.getAttribute("data-i18n-placeholder")];
+      const key = el.getAttribute("data-i18n-placeholder");
+      el.placeholder = T[lang][key] || "";
     });
   };
+
   const select = document.getElementById("lang");
   select.value = lang;
   select.addEventListener("change", (e) => {
     lang = e.target.value;
     localStorage.setItem("lang", lang);
     apply();
+    window.dispatchEvent(new CustomEvent("themeChange"));
   });
+
   apply();
 }
