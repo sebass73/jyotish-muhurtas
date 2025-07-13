@@ -181,6 +181,31 @@ export default class ZodiacChart {
       };
     });
 
+    // —————— Corrección mínima de solapamientos ——————
+    const RADIAL_FUDGE = 20; // píxeles extra para cada planeta dentro del mismo signo
+    const seen = {}; // contador por signo
+    this.pts.forEach((pt) => {
+      // Recuperamos el signo original desde astroPositions
+      const sign = astroPositions[pt.name].sign;
+      seen[sign] = (seen[sign] || 0) + 1;
+      const i = seen[sign] - 1; // índice 0 → primer planeta (no mueve), 1 → segundo, …
+      if (i > 0) {
+        // Recalculamos theta y radio original
+        const pos = astroPositions[pt.name];
+        const signIdx = this.zodiacOrder.indexOf(pos.sign);
+        const totalDeg = signIdx * 30 + pos.deg + pos.min / 60 + pos.sec / 3600;
+        const theta = (totalDeg * Math.PI) / 180 - Math.PI / 2;
+        const frac = (pos.deg + pos.min / 60 + pos.sec / 3600) / 30;
+        let r = this.innerRadius + frac * (this.radius - this.innerRadius);
+        // Aplicamos el “fudge”
+        r += i * RADIAL_FUDGE;
+        // Actualizamos sólo x,y
+        pt.x = r * Math.cos(theta);
+        pt.y = r * Math.sin(theta);
+      }
+    });
+    // —————— Fin de la corrección ——————
+
     // 6) Líneas de aspecto
     const aspects = {
       0: "conjunction",
