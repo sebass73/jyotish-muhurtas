@@ -117,10 +117,12 @@ export default class ZodiacChart {
   draw(astroPositions) {
     this.lastPositions = astroPositions;
     const ctx = this.ctx;
+    // Limpia y centra
     ctx.clearRect(0, 0, this.size, this.size);
     ctx.save();
     ctx.translate(this.size / 2, this.size / 2);
 
+    // Carga de traducciones
     const lang = localStorage.getItem("lang") || "es";
     const { signs: signNames, planets: planetNames } = T[lang];
 
@@ -148,8 +150,7 @@ export default class ZodiacChart {
 
     // 4) Etiquetas de signos
     const isDark = document.documentElement.classList.contains("dark");
-    const textColor = isDark ? "#e0e0e0" : "#2c3e50";
-    ctx.fillStyle = textColor;
+    ctx.fillStyle = isDark ? "#e0e0e0" : "#2c3e50";
     ctx.font = "bold 12px sans-serif";
     this.zodiacOrder.forEach((sign, i) => {
       const label = signNames[sign] || sign;
@@ -166,45 +167,52 @@ export default class ZodiacChart {
     // 5) Calculamos posición de cada planeta
     this.pts = Object.entries(astroPositions).map(([name, pos]) => {
       const idx = this.zodiacOrder.indexOf(pos.sign);
-      if (idx < 0) console.warn(`Signo desconocido: ${pos.sign}`);
       const totalDeg = idx * 30 + pos.deg + pos.min / 60 + pos.sec / 3600;
-      // Convertir al sistema canvas: restamos 90° para poner 0° Aries arriba
       const theta = (totalDeg * Math.PI) / 180 - Math.PI / 2;
-      // Radio proporcional al grado dentro del signo
       const frac = (pos.deg + pos.min / 60 + pos.sec / 3600) / 30;
       const r = this.innerRadius + frac * (this.radius - this.innerRadius);
       return {
         name,
+        sign: pos.sign,
         deg: totalDeg,
+        r,
+        theta,
         x: r * Math.cos(theta),
         y: r * Math.sin(theta),
       };
     });
 
-    // —————— Corrección mínima de solapamientos ——————
-    const RADIAL_FUDGE = 20; // píxeles extra para cada planeta dentro del mismo signo
-    const seen = {}; // contador por signo
+    // 5bis) Corrección de solapamientos basada en distancia mínima
+    const MIN_DIST = 8; // px: si están a menos de esto, separa
+    // Agrupamos puntos por signo
+    const groups = {};
     this.pts.forEach((pt) => {
-      // Recuperamos el signo original desde astroPositions
       const sign = astroPositions[pt.name].sign;
-      seen[sign] = (seen[sign] || 0) + 1;
-      const i = seen[sign] - 1; // índice 0 → primer planeta (no mueve), 1 → segundo, …
-      if (i > 0) {
-        // Recalculamos theta y radio original
-        const pos = astroPositions[pt.name];
-        const signIdx = this.zodiacOrder.indexOf(pos.sign);
-        const totalDeg = signIdx * 30 + pos.deg + pos.min / 60 + pos.sec / 3600;
-        const theta = (totalDeg * Math.PI) / 180 - Math.PI / 2;
-        const frac = (pos.deg + pos.min / 60 + pos.sec / 3600) / 30;
-        let r = this.innerRadius + frac * (this.radius - this.innerRadius);
-        // Aplicamos el “fudge”
-        r += i * RADIAL_FUDGE;
-        // Actualizamos sólo x,y
-        pt.x = r * Math.cos(theta);
-        pt.y = r * Math.sin(theta);
+      (groups[sign] = groups[sign] || []).push(pt);
+    });
+    // Para cada signo, ordenamos y separamos solo cuando realmente se solapen
+    Object.values(groups).forEach((arr) => {
+      arr.sort((a, b) => a.deg - b.deg);
+      for (let i = 1; i < arr.length; i++) {
+        const prev = arr[i - 1];
+        const curr = arr[i];
+        const dx = curr.x - prev.x;
+        const dy = curr.y - prev.y;
+        if (Math.hypot(dx, dy) < MIN_DIST) {
+          // Recalculamos r y theta originales
+          const pos = astroPositions[curr.name];
+          const idx = this.zodiacOrder.indexOf(pos.sign);
+          const totalDeg = idx * 30 + pos.deg + pos.min / 60 + pos.sec / 3600;
+          const theta = (totalDeg * Math.PI) / 180 - Math.PI / 2;
+          const frac = (pos.deg + pos.min / 60 + pos.sec / 3600) / 30;
+          let r = this.innerRadius + frac * (this.radius - this.innerRadius);
+          // Aplicamos separación solo a este planeta
+          r += MIN_DIST;
+          curr.x = r * Math.cos(theta);
+          curr.y = r * Math.sin(theta);
+        }
       }
     });
-    // —————— Fin de la corrección ——————
 
     // 6) Líneas de aspecto
     const aspects = {
@@ -234,7 +242,7 @@ export default class ZodiacChart {
       }
     }
 
-    // 7) Puntos planetarios
+    // 7) Dibujar planetas
     this.pts.forEach((pt) => {
       ctx.beginPath();
       ctx.arc(pt.x, pt.y, 4, 0, 2 * Math.PI);
@@ -242,7 +250,7 @@ export default class ZodiacChart {
       ctx.fill();
     });
 
-    // 8) Etiquetas on-hover (o en móvil siempre)
+    // 8) Tooltips
     if (this.isMobile) {
       this.pts.forEach((pt) => this._drawTooltip(pt, planetNames));
     } else if (this.hovered) {
