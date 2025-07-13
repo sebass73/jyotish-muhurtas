@@ -183,7 +183,7 @@ export default class ZodiacChart {
     });
 
     // 5bis) Corrección de solapamientos basada en distancia mínima
-    const MIN_DIST = 8; // px: si están a menos de esto, separa
+    const MIN_DIST = 20; // px: si están a menos de esto, separa
     // Agrupamos puntos por signo
     const groups = {};
     this.pts.forEach((pt) => {
