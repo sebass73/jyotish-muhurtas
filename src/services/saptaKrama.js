@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
 
-const PLANET_CYCLE = [
+export const PLANET_CYCLE = [
   "Sol",
   "Venus",
   "Mercurio",
@@ -20,10 +20,24 @@ const DIA_PLANETA = {
 };
 
 /**
- * Genera la secuencia de muhurtas según day-of-week y duración
+ * @param startTime    Date   – moment to start dividing (sunrise or sunset)
+ * @param muhurtaDur   number – length of each muhurta in minutes
+ * @param timezone     string – IANA zone, e.g. "Europe/Rome"
+ * @param opts         { diaSemana?: string, startPlanet?: string }
+ *                      – one of diaSemana (for daytime) or startPlanet (for nighttime)
  */
-export function generarSaptaKrama(sunrise, muhurtaDurMin, diaSemana, timezone) {
-  const primerPlaneta = DIA_PLANETA[diaSemana];
+export function generarSaptaKrama(
+  startTime,
+  muhurtaDurMin,
+  timezone,
+  opts = {}
+) {
+  // decide the very first planet:
+  const primerPlaneta = opts.startPlanet
+    ? opts.startPlanet
+    : DIA_PLANETA[opts.diaSemana];
+
+  // rotate the cycle so it begins at primerPlaneta
   const startIdx = PLANET_CYCLE.indexOf(primerPlaneta);
   const fullCycle = PLANET_CYCLE.slice(startIdx).concat(
     PLANET_CYCLE.slice(0, startIdx)
@@ -31,24 +45,16 @@ export function generarSaptaKrama(sunrise, muhurtaDurMin, diaSemana, timezone) {
 
   const secuencia = [];
   for (let i = 0; i < 12; i++) {
-    // instante en ms
-    const ts = sunrise.getTime() + muhurtaDurMin * i * 60000;
-
-    // formateamos en la zona deseada:
-    const inicio = DateTime.fromMillis(ts, { zone: timezone }).toFormat(
-      "HH:mm"
-    );
-
-    const fin = DateTime.fromMillis(ts + muhurtaDurMin * 60000, {
-      zone: timezone,
-    }).toFormat("HH:mm");
-
+    const ts = startTime.getTime() + muhurtaDurMin * i * 60000;
     secuencia.push({
       muhurta: i + 1,
       planeta: fullCycle[i % fullCycle.length],
-      inicio,
-      fin,
+      inicio: DateTime.fromMillis(ts, { zone: timezone }).toFormat("HH:mm"),
+      fin: DateTime.fromMillis(ts + muhurtaDurMin * 60000, {
+        zone: timezone,
+      }).toFormat("HH:mm"),
     });
   }
+
   return { primerPlaneta, secuencia };
 }

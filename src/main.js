@@ -1,4 +1,3 @@
-// src/main.js
 import "./styles/main.css";
 import { initI18n, T } from "./utils/i18n.js";
 import { initDarkMode } from "./utils/darkMode.js";
@@ -22,8 +21,8 @@ export default class MuhurtaApp {
     initDarkMode();
 
     this.form = new Form("#saptaForm");
-    this.cards = new Cards("#cards", false);
-    this.cardsNight = new Cards("#cards-night", true);
+    this.cards = new Cards("#cards");
+    this.cardsNight = new Cards("#cards-night");
     this.chart = new ChartDisplay("#chart");
     this.map = new MapDisplay("#map");
     this.metaDiv = document.getElementById("saptaMeta");

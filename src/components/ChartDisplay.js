@@ -1,6 +1,6 @@
 import Chart from "chart.js/auto";
 import ChartDataLabels from "chartjs-plugin-datalabels";
-import { PLANET_SYMBOLS, PLANET_COLORS } from "../utils/constants.js";
+import { PLANET_COLORS } from "../utils/constants.js";
 import { T } from "../utils/i18n.js";
 
 Chart.register(ChartDataLabels);
@@ -21,8 +21,6 @@ export default class ChartDisplay {
     const labelColor = isDark ? "#e0e0e0" : "#000000";
     const lang = localStorage.getItem("lang") || "es";
     const planetNames = T[lang].planets;
-    // const labels = muhurtas.map((m, i) => PLANET_SYMBOLS[i] || m.planeta);
-    // const labels = muhurtas.map((m) => m.planeta);
     const labels = muhurtas.map((m) => planetNames[m.planeta] || m.planeta);
     const colors = muhurtas.map(
       (m) => PLANET_COLORS[m.planeta.toLowerCase()] || "#ccc"
@@ -31,7 +29,10 @@ export default class ChartDisplay {
 
     const config = {
       type: "doughnut",
-      data: { labels, datasets: [{ data, backgroundColor: colors }] },
+      data: {
+        labels,
+        datasets: [{ data, backgroundColor: colors, radius: "65%" }],
+      },
       options: {
         rotation: -90,
         circumference: 180,
@@ -41,8 +42,8 @@ export default class ChartDisplay {
         aspectRatio: 2,
         layout: {
           padding: {
-            top: 50,
-            bottom: 40,
+            // top: 50,
+            // bottom: 40,
           },
         },
         plugins: {
@@ -59,7 +60,7 @@ export default class ChartDisplay {
             formatter: (v, ctx) => ctx.chart.data.labels[ctx.dataIndex],
             anchor: "end",
             align: "end",
-            offset: 10,
+            offset: 0,
             font: { size: 14 },
             color: labelColor,
           },

@@ -1,21 +1,16 @@
 import { obtenerDatosSol } from "./sunCalc";
-import { generarSaptaKrama } from "./saptaKrama";
+import { generarSaptaKrama, PLANET_CYCLE } from "./saptaKrama";
 import { differenceInMinutes } from "date-fns";
 import { DateTime } from "luxon";
 
 export async function ejecutarJSON(ciudad, pais, fechaISO) {
   (ciudad = ciudad), (pais = pais), (fechaISO = fechaISO);
 
-  console.log(
-    `Ejecutando con ciudad: ${ciudad}, país: ${pais}, fecha: ${fechaISO}`
-  );
   // 1) Datos del Sol (localización, sunrise/sunset, azimut y cardinales)
   const {
     latitude,
     longitude,
     timezone,
-    // sunriseTime,
-    // sunsetTime,
     sunriseDate,
     sunsetDate,
     sunriseAzimuth,
@@ -24,37 +19,38 @@ export async function ejecutarJSON(ciudad, pais, fechaISO) {
     sunsetDirection,
   } = await obtenerDatosSol(ciudad, pais, fechaISO);
 
-  // 3) Día de la semana: a partir de la CADENA fechaISO en la zona local
+  // 2) Día de la semana: a partir de la CADENA fechaISO en la zona local
   const fechaDT = DateTime.fromISO(fechaISO, { zone: timezone }).setLocale(
     "en"
-  ); // ó el locale que quieras
+  );
   const diaSemana = fechaDT.toFormat("cccc");
-  console.log(`Día de la semana: ${diaSemana}`);
-
-  // 2) Cálculo de arco solar y muhûrtas
   const arcoMin = differenceInMinutes(sunsetDate, sunriseDate);
   const muhurtaDia = Math.round(arcoMin / 12);
   const muhurtaNoche = Math.round((1440 - arcoMin) / 12);
+  
+  // 3) Cálculo de arco solar y muhûrtas
+  // ——— daytime muhurtas ———
   const { primerPlaneta, secuencia: saptaKramaDia } = generarSaptaKrama(
     sunriseDate,
     arcoMin / 12,
-    diaSemana,
-    timezone
+    timezone,
+    { diaSemana }
   );
 
-  // ——— Generar los 12 muhurtas de la noche ———
-  const saptaKramaNoche = [];
-  for (let i = 0; i < 12; i++) {
-    const tStart = sunsetDate.getTime() + i * muhurtaNoche * 60000;
-    const tEnd = tStart + muhurtaNoche * 60000;
-    saptaKramaNoche.push({
-      muhurta: i + 1,
-      inicio: DateTime.fromMillis(tStart, { zone: timezone }).toFormat("HH:mm"),
-      fin: DateTime.fromMillis(tEnd, { zone: timezone }).toFormat("HH:mm"),
-    });
-  }
+  // ——— nighttime muhurtas ———
+  // startPlanet = next after last daytime planet
+  const lastDayPlanet = saptaKramaDia[11].planeta;
+  const nextStartPlanet =
+    PLANET_CYCLE[
+      (PLANET_CYCLE.indexOf(lastDayPlanet) + 1) % PLANET_CYCLE.length
+    ];
+  const { secuencia: saptaKramaNoche } = generarSaptaKrama(
+    sunsetDate,
+    muhurtaNoche,
+    timezone,
+    { startPlanet: nextStartPlanet }
+  );
 
-  // 3) Construcción del JSON de salida
   return {
     ciudad,
     pais,
