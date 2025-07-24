@@ -12,6 +12,7 @@ export async function obtenerDatosSol(ciudad, pais, fechaISO) {
     params: { q: `${ciudad}, ${pais}`, format: "json", limit: 1 },
     headers: { "User-Agent": "JyotishYogaApp/1.0" },
   });
+  if (!geo.data.length) throw new Error("Ciudad no encontrada");
   const lat = parseFloat(geo.data[0].lat);
   const lon = parseFloat(geo.data[0].lon);
   const zone = tzlookup(lat, lon);
@@ -25,6 +26,7 @@ export async function obtenerDatosSol(ciudad, pais, fechaISO) {
   const sunsetDT = DateTime.fromJSDate(times.sunset, { zone });
   const risePos = SunCalc.getPosition(times.sunrise, lat, lon);
   const setPos = SunCalc.getPosition(times.sunset, lat, lon);
+  // CORREGIDO: 0°=Norte, sentido horario (convención astronómica)
   const toDeg = (r) => ((r * 180) / Math.PI + 180) % 360;
   const azRise = toDeg(risePos.azimuth);
   const azSet = toDeg(setPos.azimuth);
