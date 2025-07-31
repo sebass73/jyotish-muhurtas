@@ -67,6 +67,12 @@ export const T = {
     legendBlue: "Flecha azul",
     legendSunset: "dirección del atardecer",
     legendArc: "Ángulo en ° desde el Norte",
+    language: "Idioma",
+    darkMode: "Modo oscuro",
+    switchLabel: "Usar hora personalizada",
+    astroTitle: "Carta Astral Actual",
+    astroDescription: `Para visualizar tu <strong>Carta Natal</strong> ingresa la hora
+          precisa y asegúrate de que el lugar de nacimiento sea correcto.`,
   },
   en: {
     title: "Muhurtas Calculator",
@@ -136,6 +142,12 @@ export const T = {
     legendBlue: "Blue arrow",
     legendSunset: "sunset direction",
     legendArc: "Angle in ° from North",
+    language: "Language",
+    darkMode: "Dark mode",
+    switchLabel: "Use custom time",
+    astroTitle: "Current Birth Chart",
+    astroDescription: `To view your <strong>Birth Chart</strong> enter the exact time
+          and ensure the birthplace is correct.`,
   },
   it: {
     title: "Calcolatore di Muhurta",
@@ -205,6 +217,12 @@ export const T = {
     legendBlue: "Freccia blu",
     legendSunset: "direzione del tramonto",
     legendArc: "Angolo in ° da Nord",
+    language: "Lingua",
+    darkMode: "Modalità scura",
+    switchLabel: "Usa ora personalizzata",
+    astroTitle: "Carta Astrale Attuale",
+    astroDescription: `Per visualizzare il tuo <strong>Grafico Natale</strong> inserisci l'ora
+          precisa e assicurati che il luogo di nascita sia corretto.`,
   },
 };
 

@@ -18,9 +18,12 @@ export async function obtenerDatosSol(ciudad, pais, fechaISO) {
   const zone = tzlookup(lat, lon);
 
   // 2) Calcular amanecer/atardecer
+  // Asegura que la fecha esté en formato ISO válido
+  if (fechaISO.includes(" ")) {
+    fechaISO = fechaISO.replace(" ", "T");
+  }
   const d = DateTime.fromISO(fechaISO, { zone }).toJSDate();
   const times = SunCalc.getTimes(d, lat, lon);
-
   // 3) Posición y azimut
   const sunriseDT = DateTime.fromJSDate(times.sunrise, { zone });
   const sunsetDT = DateTime.fromJSDate(times.sunset, { zone });

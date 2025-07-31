@@ -6,7 +6,7 @@ import { obtenerDatosSol } from "../../services/sunCalc.js";
 
 export const handler = async (event) => {
   const params = event.queryStringParameters || {};
-  const { ciudad, pais, fecha } = params;
+  const { ciudad, pais, fecha, usarHora } = params;
   try {
     // 1) Base: muhûrtas, posiciones eclípticas, etc.
     const base = await ejecutarJSON(ciudad, pais, fecha);
@@ -19,11 +19,21 @@ export const handler = async (event) => {
 
     // 3) Posiciones planetarias (Horizons) --- lógica original
     const timezone = tzlookup(base.latitude, base.longitude);
-    const nowLocal = DateTime.fromISO(`${fecha}T00:00:00`, { zone: timezone });
+
+    // Normaliza a formato ISO válido
+    let fechaIso;
+    if (usarHora === "true" || usarHora === "on") {
+      // Si viene con espacio, convertilo a ISO
+      fechaIso = fecha.includes(" ") ? fecha.replace(" ", "T") : fecha;
+    } else {
+      // Usa solo la parte de la fecha
+      fechaIso = fecha.split("T")[0] + "T00:00:00";
+    }
+
+    const nowLocal = DateTime.fromISO(fechaIso, { zone: timezone });
     const nowUtc = nowLocal.toUTC();
     const startStr = nowUtc.toFormat("yyyy-LLL-dd HH:mm");
     const stopStr = nowUtc.plus({ minutes: 1 }).toFormat("yyyy-LLL-dd HH:mm");
-
     const bodies = {
       Sol: "10",
       Luna: "301",

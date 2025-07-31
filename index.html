@@ -3,6 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Merriweather&display=swap"
+      rel="stylesheet"
+    />
     <title data-i18n="title">Calculadora de Muhurtas</title>
   </head>
   <body>
@@ -28,46 +32,72 @@
       </div>
       <section class="init">
         <!-- Formulario de entrada -->
-        <form id="saptaForm">
-          <input
-            type="text"
-            name="ciudad"
-            placeholder="Ciudad"
-            required
-            data-i18n-placeholder="city"
-          />
-          <input
-            type="text"
-            name="pais"
-            placeholder="País"
-            required
-            data-i18n-placeholder="country"
-          />
-          <label for="fecha">
-            <span data-i18n="labelDate">Fecha</span>
-            <input
-              id="fecha"
-              name="fecha"
-              placeholder="DD/MM/AAAA"
-              data-input
-              readonly
-            />
-          </label>
-
-          <button type="submit" data-i18n="calc">Calcular</button>
+        <form id="saptaForm" class="sapta-form">
+          <div class="form-group">
+            <div class="input-icon">
+              <span class="emoji-icon">🧭</span>
+              <input
+                type="text"
+                name="ciudad"
+                placeholder="Ciudad"
+                required
+                data-i18n-placeholder="city"
+              />
+            </div>
+            <div class="input-icon">
+              <span class="emoji-icon">🗺️</span>
+              <input
+                type="text"
+                name="pais"
+                placeholder="País"
+                required
+                data-i18n-placeholder="country"
+              />
+            </div>
+            <div class="input-icon">
+              <span class="emoji-icon">🗓️</span>
+              <input id="fecha" name="fecha" type="datetime-local" />
+            </div>
+          </div>
+          <div class="form-group-buttons">
+            <!-- Switch: Usar hora personalizada -->
+            <div class="switch-container">
+              <span class="emoji-icon">⚙️</span>
+              <label class="switch">
+                <input type="checkbox" id="usarHora" name="usarHora" />
+                <span class="slider"></span>
+              </label>
+              <span data-i18n="switchLabel" class="switch-label"
+                >Usar hora personalizada</span
+              >
+            </div>
+            <button type="submit" class="btn-calc" data-i18n="calc">
+              Calcular
+            </button>
+          </div>
         </form>
         <!-- Controles: idioma y modo oscuro -->
         <div class="controls">
-          <select id="lang">
-            <option value="es">Español</option>
-            <option value="en">English</option>
-            <option value="it">Italiano</option>
-          </select>
-          <button id="darkToggle">🌙</button>
+          <div class="language-container">
+            <label for="lang" data-i18n="language"></label>
+            <select id="lang">
+              <option value="es">Español</option>
+              <option value="en">English</option>
+              <option value="it">Italiano</option>
+            </select>
+          </div>
+          <div class="dark-mode-container">
+            <label for="darkToggle" data-i18n="darkMode"></label>
+            <button id="darkToggle" class="dark-mode">🌙</button>
+          </div>
         </div>
       </section>
-      <div id="loader" class="loader hidden">
-        ⌛ <span data-i18n="loading">Calculando…</span>
+      <div id="loader-overlay" class="loader-overlay hidden">
+        <div class="loader-box">
+          <div class="loader-aura"></div>
+          <div class="loader-icon">🕉️</div>
+          <div class="loader-text">Calculando los Muhurtas del día...</div>
+        </div>
       </div>
 
       <!-- Acciones: copiar enlace y exportar CSV -->
@@ -75,7 +105,7 @@
         <button id="copyLink" data-i18n="copyLink">Copiar enlace</button>
         <button id="exportCSV" data-i18n="exportCSV">Exportar CSV</button>
       </div>
-      <div id="results" class="hidden">
+      <div id="results" class="hidden results">
         <!-- Muhurtas metadata -->
         <h2 data-i18n="daySummary">Resumen del Dia</h2>
         <div id="saptaMeta" class="sapta-meta"></div>
@@ -91,10 +121,8 @@
           <!-- <canvas id="chart" width="600" height="400"></canvas> -->
           <canvas id="chart" width="600" height="400"></canvas>
         </div>
-        <p
-          class="advice"
-        >
-          Espero estes disfrutando de la calculadora de muhurtas
+        <p class="advice">
+          ⚠️ Espero estes disfrutando de la calculadora de muhurtas
           <strong>hasta aqui</strong>. El resto de la información que ves a
           <strong>continuación</strong> aún <strong>está en revisión</strong>,
           por lo que puede estar incompleta o sujeta a cambios. ¡Gracias por tu
@@ -105,29 +133,42 @@
         <h2 class="diagram-title" data-i18n="azimuthTitle">
           Dirección del Sol
         </h2>
-        <div id="azimuth-container"></div>
-        <p class="diagram-legend">
-          • <span class="legend-red" data-i18n="legendRed"></span>:
-          <span data-i18n="legendSunrise"></span>
-          • <span class="legend-blue" data-i18n="legendBlue"></span>:
-          <span data-i18n="legendSunset"></span>
-          • <span data-i18n="legendArc"></span>
+        <section class="azimuth-section">
+          <div id="azimuth-container"></div>
+          <p class="diagram-legend">
+            • <span class="legend-red" data-i18n="legendRed"></span>:
+            <span data-i18n="legendSunrise"></span>
+            • <span class="legend-blue" data-i18n="legendBlue"></span>:
+            <span data-i18n="legendSunset"></span>
+            • <span data-i18n="legendArc"></span>
+          </p>
+        </section>
+
+        <h2 data-i18n="astroTitle"></h2>
+        <p
+          data-i18n=" astroDescription"
+          data-i18n-html="astroDescription"
+          class=""
+        >
+          Para visualizar tu <strong>Carta Natal</strong> ingresa la hora
+          precisa y asegúrate de que el lugar de nacimiento sea correcto.
         </p>
+        <section id="astroSection" class="astro-section">
+          <!-- Tabla de posiciones zodiacales -->
+          <h3 data-i18n="planetaryPositions">Posiciones Planetarias</h3>
+          <!-- <div id="astroTable"></div> -->
 
-        <!-- Tabla de posiciones zodiacales -->
-        <h2 data-i18n="planetaryPositions">Posiciones Planetarias</h2>
-        <!-- <div id="astroTable"></div> -->
-
-        <div class="table-responsive">
-          <div id="astroTable"></div>
-        </div>
-
-        <h2 data-i18n="zodiacWheel">Rueda Zodiacal</h2>
-        <!-- <canvas id="zodiacCanvas" width="400" height="400"></canvas> -->
-        <div class="zodiac-container">
-          <canvas id="zodiacCanvas"></canvas>
-        </div>
-
+          <div class="table-responsive">
+            <div id="astroTable"></div>
+          </div>
+        </section>
+        <section id="zodiacSection" class="zodiac-section">
+          <h3 data-i18n="zodiacWheel">Rueda Zodiacal</h3>
+          <!-- <canvas id="zodiacCanvas" width="400" height="400"></canvas> -->
+          <div class="zodiac-container">
+            <canvas id="zodiacCanvas"></canvas>
+          </div>
+        </section>
         <!-- Mapa -->
         <h2 data-i18n="map">Ubicación</h2>
         <div id="map" style="height: 300px; border-radius: 8px"></div>

@@ -16,7 +16,6 @@ A comprehensive web application to calculate and visualize **Muhurtas** (traditi
 - **tz-lookup**: Determine timezone from geographic coordinates.
 - **Leaflet**: Interactive map display (OpenStreetMap tiles).
 - **Chart.js** & **chartjs-plugin-datalabels**: Rendering of the zodiac wheel and data labels.
-- **flatpickr**: Lightweight, internationalized date picker.
 - **CSS**: Custom styles under `src/styles`.
 - **Netlify CLI**: Local emulation of Netlify build and functions.
 

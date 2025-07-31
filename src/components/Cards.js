@@ -13,7 +13,8 @@ export default class Cards {
 
     muhurtas.forEach((m) => {
       const el = document.createElement("div");
-      el.className = "card";
+      // el.className = "card";
+      el.className = `card ${m.planeta?.toLowerCase() || ""}`;
 
       const num = `<div class="num">#${m.muhurta}</div>`;
       const time = `<div class="time">${m.inicio} → ${m.fin}</div>`;

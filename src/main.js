@@ -9,18 +9,17 @@ import MapDisplay from "./components/MapDisplay.js";
 import renderAstroTable from "./components/AstroTable.js";
 import ZodiacChart from "./components/ZodiacChart.js";
 import { drawAzimuths } from "./components/AzimuthDiagram.js";
-import flatpickr from "flatpickr";
-import { Spanish } from "flatpickr/dist/l10n/es.js";
-import English from "flatpickr/dist/l10n/default.js";
-import { Italian } from "flatpickr/dist/l10n/it.js";
-import "flatpickr/dist/flatpickr.min.css";
 
 export default class MuhurtaApp {
   constructor() {
+    console.log("Initializing MuhurtaApp...");
     initI18n();
     initDarkMode();
 
     this.form = new Form("#saptaForm");
+    this.initFechaHoraInput();
+    const fechaFinal = this.getFechaFinal();
+    console.log("Fecha final a usar:", fechaFinal);
     this.cards = new Cards("#cards");
     this.cardsNight = new Cards("#cards-night");
     this.chart = new ChartDisplay("#chart");
@@ -28,10 +27,9 @@ export default class MuhurtaApp {
     this.metaDiv = document.getElementById("saptaMeta");
     this.astroContainer = "astroTable";
     this.lastData = null;
-
+    this.fp = null;
     this.translateUI();
-    this.initDatePicker();
-    this.loader = document.getElementById("loader");
+    this.loader = document.getElementById("loader-overlay");
     this.results = document.getElementById("results");
     this.bindEvents();
 
@@ -52,6 +50,47 @@ export default class MuhurtaApp {
     });
   }
 
+  initFechaHoraInput() {
+    const fechaInput = document.getElementById("fecha");
+    const usarHoraCheckbox = document.getElementById("usarHora");
+
+    const toggleDatetimeMode = () => {
+      const usarHora = usarHoraCheckbox.checked;
+      const now = new Date();
+      now.setSeconds(0, 0);
+
+      const tzOffset = now.getTimezoneOffset() * 60000;
+      const localISO = new Date(now - tzOffset).toISOString();
+
+      if (usarHora) {
+        fechaInput.type = "datetime-local";
+        fechaInput.value = localISO.slice(0, 16); // "YYYY-MM-DDTHH:mm"
+      } else {
+        fechaInput.type = "date";
+        fechaInput.value = localISO.slice(0, 10); // "YYYY-MM-DD"
+      }
+
+      // Guardar hora actual para uso posterior
+      fechaInput.dataset.horaActual = localISO.slice(11, 16); // "HH:mm"
+    };
+
+    toggleDatetimeMode(); // aplicar según estado inicial
+    usarHoraCheckbox.addEventListener("change", toggleDatetimeMode);
+  }
+
+  getFechaFinal() {
+    const usarHora = document.getElementById("usarHora").checked;
+    const fechaInput = document.getElementById("fecha");
+
+    if (usarHora) {
+      return fechaInput.value;
+    } else {
+      const fechaBase = fechaInput.value;
+      const horaActual = fechaInput.dataset.horaActual || "12:00";
+      return `${fechaBase}T${horaActual}`;
+    }
+  }
+
   bindEvents() {
     this.form.onSubmit(async (params) => {
       this._clearAll();
@@ -65,13 +104,17 @@ export default class MuhurtaApp {
         this.form.showError(err.message);
       } finally {
         this.loader.classList.add("hidden");
+
+        const resumenEl = document.querySelector('[id="results"]');
+        if (resumenEl) {
+          resumenEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       }
     });
 
     document.getElementById("lang").addEventListener("change", (e) => {
       localStorage.setItem("lang", e.target.value);
       this.translateUI();
-      this.initDatePicker();
       if (this.lastData) this.renderContent();
     });
   }
@@ -105,27 +148,6 @@ export default class MuhurtaApp {
     });
   }
 
-  initDatePicker() {
-    const lang = localStorage.getItem("lang") || "es";
-    const locales = { es: Spanish, en: English, it: Italian };
-
-    // Flatpickr sobre el #fecha
-    flatpickr("#fecha", {
-      locale: locales[lang] || Spanish,
-      dateFormat: "Y-m-d", // valor que envía al servidor (YYYY-MM-DD)
-      altInput: true,
-      altFormat: "d/m/Y", // formato visible en la UI
-      allowInput: true,
-      defaultDate: new Date(),
-      prevArrow: "‹",
-      nextArrow: "›",
-      // Si quisieras manejar cambios manuales:
-      onChange: ([d]) => {
-        // por defecto Form lee el value de #fecha en formato Y-m-d
-      },
-    });
-  }
-
   renderContent() {
     const {
       fecha,
@@ -141,10 +163,10 @@ export default class MuhurtaApp {
       astroPositions,
       timezone,
     } = this.lastData;
-
     this.cards.clear();
 
     // ——— Cálculos de minutos ———
+    console.log("Calculating time slots...");
     const [h1, m1] = sunrise.time.split(":").map(Number);
     const [h2, m2] = sunset.time.split(":").map(Number);
     const t1 = new Date(0);
@@ -155,6 +177,7 @@ export default class MuhurtaApp {
     const diaMinutos = Math.round(arcoSolMin / 12);
     const nocheMinutos = Math.round((1440 - arcoSolMin) / 12);
 
+    console.log("Time slots calculated:");
     // ——— Traducción de labels dinámicos ———
     const lang = localStorage.getItem("lang") || "es";
     const m = T[lang].meta;
@@ -162,9 +185,10 @@ export default class MuhurtaApp {
       weekday: "long",
       timeZone: timezone,
     });
-    const rawWeekday = dtf.format(new Date(`${fecha}T00:00:00`));
+    const rawWeekday = dtf.format(new Date(fecha.replace(" ", "T")));
     const weekday = rawWeekday.charAt(0).toUpperCase() + rawWeekday.slice(1);
 
+    console.log("Rendering metadata...");
     // ——— Render metadata ———
     this.metaDiv.textContent =
       `🗓 ${m.day}: ${weekday}   ` +
@@ -175,9 +199,11 @@ export default class MuhurtaApp {
       `🌙 ${m.nightSlots}: ${nocheMinutos} min`;
     this.metaDiv.style.display = diaSemana ? "flex" : "none";
 
+    console.log("Rendering astro table...");
     // ——— Render tabla de efemérides zodiacales ———
     renderAstroTable(this.astroContainer, astroPositions);
 
+    console.log("Rendering cards, chart, and map...");
     // ——— Render cards, gráfico y mapa ———
     this.cards.render(saptaKramaDia);
     this.chart.update(saptaKramaDia);
@@ -193,6 +219,7 @@ export default class MuhurtaApp {
       this.map.map.invalidateSize();
     }
 
+    console.log("Drawing azimuth diagram...");
     // Dibuja diagrama de azimuts
     drawAzimuths({
       sunriseAz: sunrise.azimuth,
@@ -208,6 +235,8 @@ export default class MuhurtaApp {
       this.zodiac = new ZodiacChart("zodiacCanvas");
     }
     this.zodiac.resizeAndDraw(this.lastData.astroPositions);
+
+    console.log("Content rendered successfully");
   }
 
   _clearAll() {
