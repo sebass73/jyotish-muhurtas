@@ -23,7 +23,7 @@ no ve nada. El loader desaparece y la pantalla queda vacía sin explicación.
 
 ---
 
-### Bug #2 — `obtenerDatosSol` se llama dos veces por cada cálculo
+### Bug #2 ✅ — `obtenerDatosSol` se llama dos veces por cada cálculo
 **Archivo**: `src/netlify/functions/sapta.mjs:12-14`
 
 ```js
@@ -40,7 +40,7 @@ y puede rechazar la segunda petición si vienen muy seguidas.
 
 ---
 
-### Bug #3 — 10 peticiones a JPL Horizons en serie (no en paralelo)
+### Bug #3 ✅ — 10 peticiones a JPL Horizons en serie (no en paralelo)
 **Archivo**: `src/netlify/functions/sapta.mjs:49-52`
 
 ```js
@@ -57,7 +57,7 @@ Cada petición tarda ~1-2 segundos. El tiempo total es ~10-20 segundos innecesar
 
 ---
 
-### Bug #4 — Cambio de idioma emite `themeChange` en lugar de re-renderizar contenido
+### Bug #4 ✅ — Cambio de idioma emite `themeChange` en lugar de re-renderizar contenido
 **Archivo**: `src/utils/i18n.js:262-263`
 
 ```js
@@ -79,7 +79,7 @@ causa un **redibujado innecesario doble** del diagrama y la rueda zodiacal.
 
 ---
 
-### Bug #5 — `this.pts` puede ser `undefined` en `ZodiacChart._onMouseMove`
+### Bug #5 ✅ — `this.pts` puede ser `undefined` en `ZodiacChart._onMouseMove`
 **Archivo**: `src/components/ZodiacChart.js:64,84`
 
 ```js
@@ -139,7 +139,7 @@ producción.
 
 ---
 
-### Bug #8 — El mapa no tiene método `clear()` pero se llama desde `_clearAll`
+### Bug #8 ✅ — El mapa no tiene método `clear()` pero se llama desde `_clearAll`
 **Archivo**: `src/main.js:247` y `src/components/MapDisplay.js`
 
 ```js
@@ -154,7 +154,7 @@ resto de la UI ya fue limpiada).
 
 ---
 
-### Bug #9 — Urano, Neptuno y Plutón no tienen traducción en `i18n.js`
+### Bug #9 ✅ — Urano, Neptuno y Plutón no tienen traducción en `i18n.js`
 **Archivo**: `src/utils/i18n.js:21-29`
 
 ```js
@@ -295,10 +295,10 @@ Hay múltiples `console.log` que exponen información de estado interno en produ
 
 ## Orden de prioridad de corrección sugerido
 
-1. **#1** — Mostrar errores al usuario (UX bloqueante)
-2. **#3** — Paralelizar peticiones a JPL Horizons (performance crítica)
-3. **#5** — Inicializar `this.pts = []` en ZodiacChart (crash potencial)
-4. **#2** — Eliminar segunda llamada a `obtenerDatosSol`
-5. **#9** — Agregar Urano/Neptuno/Plutón a los objetos de traducción
-6. **#4** — Separar evento de cambio de idioma de `themeChange`
-7. **#8** — Implementar `MapDisplay.clear()` o limpiar el contenedor del mapa
+1. **#1** — Mostrar errores al usuario (UX bloqueante) — ⏸ pendiente de decisión UX
+2. **#3** ✅ — Paralelizar peticiones a JPL Horizons (`Promise.all`)
+3. **#5** ✅ — Inicializar `this.pts = []` en ZodiacChart
+4. **#2** ✅ — Eliminar segunda llamada a `obtenerDatosSol`
+5. **#9** ✅ — Agregar Urano/Neptuno/Plutón a los objetos de traducción
+6. **#4** ✅ — Eliminar `dispatchEvent("themeChange")` del listener de idioma
+7. **#8** ✅ — Implementar `MapDisplay.clear()`

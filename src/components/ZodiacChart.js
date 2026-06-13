@@ -59,6 +59,7 @@ export default class ZodiacChart {
     this.orb = 5; // tolerancia de orbe
 
     this.hovered = null;
+    this.pts = [];
 
     // Eventos de interacción
     this.canvas.addEventListener("mousemove", (e) => this._onMouseMove(e));

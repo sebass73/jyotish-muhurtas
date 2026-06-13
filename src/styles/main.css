@@ -20,14 +20,16 @@ body {
   padding: 2rem;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  max-width: 65vw;
+  max-width: 900px;
   width: 100%;
   transition: background 0.3s, box-shadow 0.3s;
 }
 
 .init {
   display: flex;
-  justify-content: space-between;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 1rem;
   margin-bottom: 1.5rem;
   background: #f9f9f9;
   padding: 1rem;
@@ -55,7 +57,9 @@ body {
 }
 
 .sapta-form {
-  margin: 0.5rem;
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
 }
 
 .app-legend {
@@ -124,15 +128,18 @@ body {
 
 .form-group {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
+  align-items: flex-end;
 }
 
 .controls {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: end;
-  margin: 0.5rem;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  align-items: flex-start;
+  padding-top: 0.25rem;
 }
 
 .dark-mode-container {
@@ -511,10 +518,9 @@ body {
 .input-icon {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  justify-content: space-between;
-  margin-bottom: 0.75rem;
-  width: 100%;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+  flex: 1 1 120px;
 }
 
 .emoji-icon {
@@ -525,7 +531,8 @@ body {
 
 .input-icon input {
   flex: 1;
-  width: 11rem;
+  min-width: 80px;
+  width: auto;
 }
 
 .form-group-buttons {
@@ -632,68 +639,129 @@ body {
 @media (max-width: 600px) {
   body {
     margin: 0;
-    padding: 0 0.75rem 0 0.75rem;
+    padding: 0.75rem;
     background: url("/images/background.avif") center top;
-  }
-  .container {
-    margin: 0;
-    padding: 0 1rem 0 1rem;
-    width: 88vw;
-    max-width: 100vw;
-    border-radius: 0;
-    box-shadow: none;
-    background-color: #fff;
+    align-items: flex-start;
+    min-height: 100vh;
+    box-sizing: border-box;
   }
 
-  .header-with-image {
-    flex-direction: column-reverse;
-    margin-top: 1rem;
+  .container {
+    width: 100%;
+    max-width: 100%;
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+    background-color: #fff;
+    box-sizing: border-box;
   }
+
+  /* Header: logo centrado arriba, título y leyenda abajo */
+  .header-with-image {
+    flex-direction: column-reverse; /* logo (2º en DOM) sube al tope */
+    align-items: center;
+    text-align: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .header-image {
+    width: 120px;
+    height: 120px;
+  }
+
+  /* .init: wrapper transparente, solo organiza columna */
   .init {
     flex-direction: column;
+    align-items: stretch; /* hijos ocupan todo el ancho */
     gap: 0.75rem;
-  }
-  .init input,
-  .init select {
-    width: 100%;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+    margin-bottom: 1rem;
   }
 
+  /* Controles: card propia, Idioma a la izquierda, Modo oscuro a la derecha */
+  .controls {
+    order: -1;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.6rem 1rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.08);
+    box-sizing: border-box;
+  }
+
+  .language-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .dark-mode-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  /* Formulario: card propia, ancho completo */
+  .sapta-form {
+    flex: none;
+    width: 100%;
+    box-sizing: border-box;
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Inputs: apilados, ancho completo */
+  .form-group {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .input-icon {
+    flex: none;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 0;
+  }
+
+  .input-icon input,
+  .input-icon select {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Switch y botón: filas separadas */
   .form-group-buttons {
     flex-direction: column;
-    align-items: center;
-    width: 100%;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .switch-container {
+    margin: 0;
+    justify-content: flex-start;
   }
 
   .btn-calc {
     width: 100%;
   }
 
-  .language-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 50%;
-    gap: 0.5rem;
-
-    select{
-      margin-top: 0.5rem;
-    }
-  }
-
-  .controls {
-    justify-content: space-between;
-  }
-
-  .dark-mode-container {
-    display: flex;
-    flex-direction: column;
-    width: 40%;
-
-    button {
-      margin-top: 0.5rem;
-    }
-  }
-
+  /* Resultados */
   .cards {
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 0.5rem;
@@ -720,17 +788,5 @@ body {
     padding: 0.5rem 0.25rem;
     font-size: 0.75rem;
     text-align: center;
-  }
-
-  .switch-container {
-    margin: 1rem 0rem 1rem 0rem;
-    justify-content: center;
-  }
-
-  .form-group {
-    display: flex;
-    gap: 0.5rem;
-    flex-direction: column;
-    align-items: center;
   }
 }

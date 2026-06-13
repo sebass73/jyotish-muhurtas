@@ -26,6 +26,9 @@ export const T = {
       Saturno: "Saturno",
       Júpiter: "Júpiter",
       Marte: "Marte",
+      Urano: "Urano",
+      Neptuno: "Neptuno",
+      Plutón: "Plutón",
     },
     meta: {
       day: "Día",
@@ -101,6 +104,9 @@ export const T = {
       Saturno: "Saturn",
       Júpiter: "Jupiter",
       Marte: "Mars",
+      Urano: "Uranus",
+      Neptuno: "Neptune",
+      Plutón: "Pluto",
     },
     meta: {
       day: "Day",
@@ -176,6 +182,9 @@ export const T = {
       Saturno: "Saturno",
       Júpiter: "Giove",
       Marte: "Marte",
+      Urano: "Urano",
+      Neptuno: "Nettuno",
+      Plutón: "Plutone",
     },
     meta: {
       day: "Giorno",
@@ -260,7 +269,6 @@ export function initI18n() {
     lang = e.target.value;
     localStorage.setItem("lang", lang);
     apply();
-    window.dispatchEvent(new CustomEvent("themeChange"));
   });
 
   apply();
