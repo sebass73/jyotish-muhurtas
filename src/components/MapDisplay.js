@@ -19,6 +19,15 @@ export default class MapDisplay {
     this.el = document.querySelector(selector);
     this.map = null;
   }
+  clear() {
+    if (this.map) {
+      this.map.off();
+      this.map.remove();
+      this.map = null;
+    }
+    this.el.innerHTML = "";
+  }
+
   update(lat, lng, city, country) {
     if (this.map) {
       this.map.off();
