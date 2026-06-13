@@ -39,13 +39,11 @@ export const handler = async (event) => {
       Neptuno: "899",
       Plutón: "999",
     };
-    const entries = await Promise.all(
-      Object.entries(bodies).map(async ([name, id]) => {
-        const dec = await fetchEclLon(id, startStr, stopStr);
-        return [name, toZodiacPosition(dec)];
-      })
-    );
-    const astro = Object.fromEntries(entries);
+    const astro = {};
+    for (const [name, id] of Object.entries(bodies)) {
+      const dec = await fetchEclLon(id, startStr, stopStr);
+      astro[name] = toZodiacPosition(dec);
+    }
     // 4) Devolver todo junto
     return {
       statusCode: 200,
