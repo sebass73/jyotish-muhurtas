@@ -9,6 +9,7 @@ import MapDisplay from "./components/MapDisplay.js";
 import renderAstroTable from "./components/AstroTable.js";
 import ZodiacChart from "./components/ZodiacChart.js";
 import { drawAzimuths } from "./components/AzimuthDiagram.js";
+import { DateTime } from "luxon";
 
 export default class MuhurtaApp {
   constructor() {
@@ -181,11 +182,10 @@ export default class MuhurtaApp {
     // ——— Traducción de labels dinámicos ———
     const lang = localStorage.getItem("lang") || "es";
     const m = T[lang].meta;
-    const dtf = new Intl.DateTimeFormat(lang, {
-      weekday: "long",
-      timeZone: timezone,
-    });
-    const rawWeekday = dtf.format(new Date(fecha.replace(" ", "T")));
+    const fechaParaFormato = fecha.includes("T") ? fecha : fecha + "T12:00:00";
+    const rawWeekday = DateTime.fromISO(fechaParaFormato, { zone: timezone })
+      .setLocale(lang)
+      .toFormat("cccc");
     const weekday = rawWeekday.charAt(0).toUpperCase() + rawWeekday.slice(1);
 
     console.log("Rendering metadata...");
