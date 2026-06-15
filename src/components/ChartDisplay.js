@@ -93,16 +93,34 @@ function drawSectors(svg, cx, cy, rIn, rOut, rNum, muhurtas, totalAll, startDeg,
     // Tooltip
     const label = `${planetNames[m.planeta] ?? m.planeta}  ${m.inicio} → ${m.fin}`;
     const tt = getTooltip();
-    g.addEventListener("mouseenter", () => {
+
+    const placeTooltip = (x, y) => {
+      tt.style.left = "0px"; // reset para medir offsetWidth real
+      const tw = tt.offsetWidth || 160;
+      const fits = x + 14 + tw < window.innerWidth;
+      tt.style.left = Math.max(4, fits ? x + 14 : x - 14 - tw) + "px";
+      tt.style.top  = Math.max(4, y - 36) + "px";
+    };
+
+    g.addEventListener("mouseenter", (e) => {
       tt.textContent = label;
       tt.classList.add("visible");
+      placeTooltip(e.clientX, e.clientY);
     });
     g.addEventListener("mousemove", (e) => {
-      tt.style.left = (e.clientX + 14) + "px";
-      tt.style.top  = (e.clientY - 36) + "px";
+      placeTooltip(e.clientX, e.clientY);
     });
     g.addEventListener("mouseleave", () => {
       tt.classList.remove("visible");
+    });
+    g.addEventListener("touchstart", (e) => {
+      const t = e.touches[0];
+      tt.textContent = label;
+      tt.classList.add("visible");
+      placeTooltip(t.clientX, t.clientY);
+    }, { passive: true });
+    g.addEventListener("touchend", () => {
+      setTimeout(() => tt.classList.remove("visible"), 1800);
     });
 
     // Símbolo del planeta (sin rotación, centrado en el sector)
