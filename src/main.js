@@ -190,13 +190,17 @@ export default class MuhurtaApp {
 
     console.log("Rendering metadata...");
     // ——— Render metadata ———
-    this.metaDiv.textContent =
-      `🗓 ${m.day}: ${weekday}   ` +
-      `🌅 ${m.sunrise}: ${sunrise.time}   ` +
-      `🌇 ${m.sunset}: ${sunset.time}   ` +
-      `☀️ ${m.solarArc}: ${arcoSolMin} min   ` +
-      `🕒 ${m.daySlots}: ${diaMinutos} min   ` +
-      `🌙 ${m.nightSlots}: ${nocheMinutos} min`;
+    const metaItems = [
+      `🗓 ${m.day}: ${weekday}`,
+      `🌅 ${m.sunrise}: ${sunrise.time}`,
+      `🌇 ${m.sunset}: ${sunset.time}`,
+      `☀️ ${m.solarArc}: ${arcoSolMin} min`,
+      `🕒 ${m.daySlots}: ${diaMinutos} min`,
+      `🌙 ${m.nightSlots}: ${nocheMinutos} min`,
+    ];
+    this.metaDiv.innerHTML = metaItems
+      .map(t => `<span class="meta-item">${t}</span>`)
+      .join("");
     this.metaDiv.style.display = diaSemana ? "flex" : "none";
 
     console.log("Rendering astro table...");
