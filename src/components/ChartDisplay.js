@@ -196,6 +196,8 @@ export default class ChartDisplay {
     const W = 620, H = 620;
     const CX = W / 2, CY = H / 2;
     const R_IN = 100, R_OUT = 200, R_NUM = 228;
+    // Crop 50px de cada lado: el contenido real empieza en ~60px desde el borde
+    const CROP = 50;
 
     const dayTotal   = muhurtasDia.reduce((s, m) => s + durMin(m.inicio, m.fin), 0);
     const nightTotal = muhurtasNoche?.reduce((s, m) => s + durMin(m.inicio, m.fin), 0) ?? 0;
@@ -211,7 +213,7 @@ export default class ChartDisplay {
     const nightIdx = muhurtasNoche?.length ? activeMuhurtaIndex(muhurtasNoche) : -1;
 
     const svg = svgEl("svg", {
-      viewBox: `0 0 ${W} ${H}`,
+      viewBox: `${CROP} ${CROP} ${W - CROP * 2} ${H - CROP * 2}`,
       width: "100%",
       style: "display:block;overflow:visible",
     });
