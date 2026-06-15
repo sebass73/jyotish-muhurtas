@@ -16,7 +16,7 @@ export const T = {
     exportCSV: "Exportar CSV",
     success: "✅ Listo!",
     errFetch: "❌ Error al obtener datos",
-    diagram: "Reloj Solar",
+    diagram: "Kalachakra",
     map: "Ubicación",
     planets: {
       Sol: "Sol",
@@ -94,7 +94,7 @@ export const T = {
     exportCSV: "Export CSV",
     success: "✅ Done!",
     errFetch: "❌ Error fetching data",
-    diagram: "Solar Clock",
+    diagram: "Kalachakra",
     map: "Location",
     planets: {
       Sol: "Sun",
@@ -172,7 +172,7 @@ export const T = {
     exportCSV: "Esporta CSV",
     success: "✅ Fatto!",
     errFetch: "❌ Errore dati",
-    diagram: "Orologio Solare",
+    diagram: "Kalachakra",
     map: "Località",
     planets: {
       Sol: "Sole",

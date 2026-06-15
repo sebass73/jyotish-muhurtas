@@ -23,7 +23,7 @@ export default class MuhurtaApp {
     console.log("Fecha final a usar:", fechaFinal);
     this.cards = new Cards("#cards");
     this.cardsNight = new Cards("#cards-night");
-    this.chart = new ChartDisplay("#chart");
+    this.chart = new ChartDisplay(".chart-container");
     this.map = new MapDisplay("#map");
     this.metaDiv = document.getElementById("saptaMeta");
     this.astroContainer = "astroTable";
@@ -43,7 +43,7 @@ export default class MuhurtaApp {
           sunsetAz: this.lastData.sunset.azimuth,
           sunsetDir: this.lastData.sunset.direction,
         });
-        this.chart.update(this.lastData.saptaKramaDia);
+        this.chart.update(this.lastData.saptaKramaDia, this.lastData.saptaKramaNoche);
       }
       if (this.zodiac) {
         this.zodiac.resizeAndDraw(this.lastData.astroPositions);
@@ -206,7 +206,7 @@ export default class MuhurtaApp {
     console.log("Rendering cards, chart, and map...");
     // ——— Render cards, gráfico y mapa ———
     this.cards.render(saptaKramaDia);
-    this.chart.update(saptaKramaDia);
+    this.chart.update(saptaKramaDia, saptaKramaNoche);
     this.cardsNight.clear();
     this.cardsNight.render(saptaKramaNoche);
     this.map.update(latitude, longitude, ciudad, pais);
