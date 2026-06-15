@@ -489,6 +489,36 @@ body {
   aspect-ratio: 1 / 1;
 }
 
+.zodiac-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.2rem;
+  justify-content: center;
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+}
+
+.zodiac-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.zodiac-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.zodiac-legend-label {
+  color: #555;
+}
+
+.dark .zodiac-legend-label {
+  color: #bbb;
+}
+
 .zodiac-container canvas {
   position: absolute;
   inset: 0;

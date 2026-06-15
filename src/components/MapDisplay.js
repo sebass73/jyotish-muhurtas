@@ -32,17 +32,24 @@ export default class MapDisplay {
     if (this.map) {
       this.map.off();
       this.map.remove();
+      this.map = null;
     }
+    // Limpia el elemento para evitar "Map container is already initialized"
+    this.el.innerHTML = "";
 
     this.map = L.map(this.el).setView([lat, lng], 10);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap",
     }).addTo(this.map);
-    
+
+    const capitalize = (s) => s
+      ? s.charAt(0).toUpperCase() + s.slice(1)
+      : s;
+
     L.marker([lat, lng])
       .addTo(this.map)
-      .bindPopup(`${city}, ${country}`)
+      .bindPopup(`${capitalize(city)}, ${capitalize(country)}`)
       .openPopup();
   }
 }
