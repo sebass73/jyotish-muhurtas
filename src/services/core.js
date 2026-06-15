@@ -17,6 +17,7 @@ export async function ejecutarJSON(ciudad, pais, fechaISO) {
     sunriseDirection,
     sunsetAzimuth,
     sunsetDirection,
+    moon,
   } = await obtenerDatosSol(ciudad, pais, fechaISO);
 
   // 2) Día de la semana: a partir de la CADENA fechaISO en la zona local
@@ -79,6 +80,7 @@ export async function ejecutarJSON(ciudad, pais, fechaISO) {
     primerPlaneta,
     saptaKramaDia,
     saptaKramaNoche,
+    moon,
   };
 }
 

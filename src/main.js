@@ -23,9 +23,9 @@ export default class MuhurtaApp {
     console.log("Fecha final a usar:", fechaFinal);
     this.cards = new Cards("#cards");
     this.cardsNight = new Cards("#cards-night");
-    this.chart = new ChartDisplay("#chart");
+    this.chart = new ChartDisplay(".chart-container");
     this.map = new MapDisplay("#map");
-    this.metaDiv = document.getElementById("saptaMeta");
+    this.summaryEl = document.getElementById("daySummaryCards");
     this.astroContainer = "astroTable";
     this.lastData = null;
     this.fp = null;
@@ -43,7 +43,7 @@ export default class MuhurtaApp {
           sunsetAz: this.lastData.sunset.azimuth,
           sunsetDir: this.lastData.sunset.direction,
         });
-        this.chart.update(this.lastData.saptaKramaDia);
+        this.chart.update(this.lastData.saptaKramaDia, this.lastData.saptaKramaNoche);
       }
       if (this.zodiac) {
         this.zodiac.resizeAndDraw(this.lastData.astroPositions);
@@ -163,6 +163,7 @@ export default class MuhurtaApp {
       saptaKramaNoche,
       astroPositions,
       timezone,
+      moon,
     } = this.lastData;
     this.cards.clear();
 
@@ -189,15 +190,38 @@ export default class MuhurtaApp {
     const weekday = rawWeekday.charAt(0).toUpperCase() + rawWeekday.slice(1);
 
     console.log("Rendering metadata...");
-    // ——— Render metadata ———
-    this.metaDiv.textContent =
-      `🗓 ${m.day}: ${weekday}   ` +
-      `🌅 ${m.sunrise}: ${sunrise.time}   ` +
-      `🌇 ${m.sunset}: ${sunset.time}   ` +
-      `☀️ ${m.solarArc}: ${arcoSolMin} min   ` +
-      `🕒 ${m.daySlots}: ${diaMinutos} min   ` +
-      `🌙 ${m.nightSlots}: ${nocheMinutos} min`;
-    this.metaDiv.style.display = diaSemana ? "flex" : "none";
+    // ——— Render two summary cards ———
+    const solLabel = T[lang].planets?.Sol ?? "Sol";
+    const row = (emoji, label, value) =>
+      `<div class="summary-row"><span>${emoji} ${label}</span><span>${value}</span></div>`;
+
+    const moonRows = moon ? (() => {
+      const phaseName = m[moon.phaseKey] ?? moon.phaseKey;
+      return `
+        <div class="summary-phase">
+          <span>${moon.phaseEmoji}</span>
+          <span>${phaseName}</span>
+          <span class="summary-phase-illum">${moon.illumination}%</span>
+        </div>
+        ${moon.riseTime ? row("↑", m.moonRise, moon.riseTime) : ""}
+        ${moon.setTime  ? row("↓", m.moonSet,  moon.setTime)  : ""}`;
+    })() : "";
+
+    this.summaryEl.innerHTML = `
+      <div class="summary-card">
+        <div class="summary-card-header">☉ ${solLabel}</div>
+        ${row("🗓", m.day, weekday)}
+        ${row("🌅", m.sunrise, sunrise.time)}
+        ${row("🌇", m.sunset, sunset.time)}
+        ${row("☀️", m.solarArc, arcoSolMin + " min")}
+        ${row("🕒", m.daySlots, diaMinutos + " min")}
+        ${row("🌙", m.nightSlots, nocheMinutos + " min")}
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-header">☾ Chandrakala</div>
+        ${moonRows}
+      </div>`;
+    this.summaryEl.style.display = diaSemana ? "grid" : "none";
 
     console.log("Rendering astro table...");
     // ——— Render tabla de efemérides zodiacales ———
@@ -206,7 +230,7 @@ export default class MuhurtaApp {
     console.log("Rendering cards, chart, and map...");
     // ——— Render cards, gráfico y mapa ———
     this.cards.render(saptaKramaDia);
-    this.chart.update(saptaKramaDia);
+    this.chart.update(saptaKramaDia, saptaKramaNoche);
     this.cardsNight.clear();
     this.cardsNight.render(saptaKramaNoche);
     this.map.update(latitude, longitude, ciudad, pais);
@@ -240,8 +264,8 @@ export default class MuhurtaApp {
   }
 
   _clearAll() {
-    this.metaDiv.style.display = "none";
-    this.metaDiv.textContent = "";
+    this.summaryEl.style.display = "none";
+    this.summaryEl.innerHTML = "";
     this.cards.clear();
     this.chart.clear?.();
     this.map.clear?.();

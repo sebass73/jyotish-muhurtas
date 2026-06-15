@@ -27,22 +27,17 @@ body {
 
 .init {
   display: flex;
-  flex-direction: row;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
   gap: 1rem;
   margin-bottom: 1.5rem;
   background: #f9f9f9;
-  padding: 1rem;
+  padding: 1.25rem;
   border-radius: 8px;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
 }
 
-.init input {
-  max-width: 75%;
-}
-
 .init button {
-  max-width: 70%;
   justify-content: center;
 }
 
@@ -57,9 +52,9 @@ body {
 }
 
 .sapta-form {
-  flex: 1 1 0;
-  min-width: 0;
-  margin: 0;
+  width: 100%;
+  max-width: 520px;
+  box-sizing: border-box;
 }
 
 .app-legend {
@@ -128,18 +123,20 @@ body {
 
 .form-group {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 0.5rem;
-  align-items: flex-end;
+  align-items: stretch;
 }
 
 .controls {
+  order: -1;
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  flex-shrink: 0;
-  align-items: flex-start;
-  padding-top: 0.25rem;
+  flex-direction: row;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 520px;
 }
 
 .dark-mode-container {
@@ -153,6 +150,17 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 1rem;
   margin: 1.5rem 1rem 3rem 1rem;
+}
+
+.card--active {
+  box-shadow: 0 0 0 3px #ff6600, 0 4px 16px rgba(255, 102, 0, 0.25);
+  transform: scale(1.05);
+  z-index: 1;
+  position: relative;
+}
+
+.dark .card--active {
+  box-shadow: 0 0 0 3px #ff8833, 0 4px 16px rgba(255, 136, 51, 0.3);
 }
 
 .card.sol:hover {
@@ -177,9 +185,6 @@ body {
   background: #cfd8dc;
 }
 
-.sapta-meta:hover {
-  background: #e1f5fe;
-}
 
 .card {
   background: #fafafa;
@@ -187,6 +192,7 @@ body {
   border-radius: 8px;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.05);
   text-align: center;
+  transition: box-shadow 0.2s, transform 0.2s;
 }
 
 .card .num {
@@ -198,19 +204,85 @@ body {
 }
 .card .planet {
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
 }
 
-.sapta-meta {
+.planet-icon {
+  font-size: 1.1em;
+}
+
+/* ── Day summary two-card layout ──────────────────────── */
+.day-summary-cards {
   display: none;
-  background: #f9f9f9;
-  color: #333;
-  padding: 1rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 0 1rem 2rem;
+}
+
+.summary-card {
+  background: #fafafa;
   border-radius: 8px;
-  margin: 1.5rem 1rem 3rem 1rem;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
-  font-size: 0.9rem;
-  text-align: center;
-  flex-direction: column;
+  padding: 1rem;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.05);
+  font-size: 0.875rem;
+}
+
+.summary-card-header {
+  font-size: 0.72rem;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #999;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.18rem 0;
+  gap: 0.5rem;
+}
+
+.summary-row span:first-child {
+  color: #666;
+  white-space: nowrap;
+}
+
+.summary-row span:last-child {
+  font-weight: 500;
+  text-align: right;
+}
+
+.summary-phase {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.18rem 0 0.3rem;
+  flex-wrap: wrap;
+}
+
+.summary-phase-illum {
+  color: #999;
+}
+
+.dark .summary-card {
+  background: #2a2a2a;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.1);
+}
+
+.dark .summary-card-header {
+  color: #aaa;
+  border-bottom-color: #444;
+}
+
+.dark .summary-row span:first-child {
+  color: #aaa;
 }
 
 .hidden {
@@ -253,14 +325,72 @@ body {
 }
 
 .chart-container {
-  position: relative;
   width: 100%;
-  max-width: 600px;
   margin: 1rem auto;
-  aspect-ratio: 2.14 / 1;
   background-color: #f9f9f9;
   border-radius: 8px;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.chart-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.chart-svg-box {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.chart-legend {
+  flex: 0 0 130px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chart-legend-icon {
+  font-size: 1.25rem;
+  width: 1.6rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.chart-legend-name {
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.dark .chart-legend-name {
+  color: #ccc;
+}
+
+.chart-tooltip {
+  position: fixed;
+  pointer-events: none;
+  background: rgba(20, 20, 20, 0.88);
+  color: #fff;
+  padding: 5px 11px;
+  border-radius: 7px;
+  font-size: 13px;
+  white-space: nowrap;
+  z-index: 9999;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.chart-tooltip.visible {
+  opacity: 1;
 }
 
 .chart-container canvas {
@@ -408,6 +538,36 @@ body {
   aspect-ratio: 1 / 1;
 }
 
+.zodiac-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.2rem;
+  justify-content: center;
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+}
+
+.zodiac-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.zodiac-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.zodiac-legend-label {
+  color: #555;
+}
+
+.dark .zodiac-legend-label {
+  color: #bbb;
+}
+
 .zodiac-container canvas {
   position: absolute;
   inset: 0;
@@ -537,9 +697,9 @@ body {
 
 .form-group-buttons {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 .btn-calc {
@@ -632,7 +792,72 @@ body {
 }
 
 
-/* ————————————————————————————————  
+/* ————————————————————————————————
+   Desktop: formulario en fila única
+   ———————————————————————————————— */
+
+@media (min-width: 601px) {
+  /* .init se convierte en el único contenedor flex */
+  .init {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 0.75rem;
+    row-gap: 0.75rem;
+  }
+
+  /* Disuelve la caja del form: sus hijos pasan a ser hijos directos de .init */
+  .sapta-form {
+    display: contents;
+  }
+
+  /* Fila 1: inputs se expanden para llenar toda la fila junto al botón */
+  .form-group {
+    flex: 1 1 auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0;
+    order: 1;
+  }
+
+  /* Disuelve también form-group-buttons: switch y botón quedan al mismo nivel */
+  .form-group-buttons {
+    display: contents;
+  }
+
+  /* Botón: fila 1, pegado a los inputs */
+  .btn-calc {
+    order: 2;
+    width: auto;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Fila 2: switch — como form-group tiene flex:1 y llena fila 1,
+     el switch y .controls caen solos a la fila siguiente */
+  .switch-container {
+    order: 3;
+    flex-shrink: 0;
+  }
+
+  /* Fila 2: controles al lado del switch */
+  .controls {
+    order: 4;
+    width: auto;
+    max-width: none;
+    gap: 1rem;
+    margin-left: auto; /* empuja controles a la derecha de la fila 2 */
+  }
+
+  /* Mostrar leyenda del switch en desktop */
+  .switch-label {
+    display: inline;
+  }
+}
+
+/* ————————————————————————————————
    Responsive tweaks (móvil-first dentro de este bloque)
    ———————————————————————————————— */
 
@@ -670,10 +895,9 @@ body {
     height: 120px;
   }
 
-  /* .init: wrapper transparente, solo organiza columna */
+  /* .init: quita el fondo/sombra en mobile, deja su card propia a cada hijo */
   .init {
-    flex-direction: column;
-    align-items: stretch; /* hijos ocupan todo el ancho */
+    align-items: stretch;
     gap: 0.75rem;
     padding: 0;
     background: none;
@@ -681,14 +905,10 @@ body {
     margin-bottom: 1rem;
   }
 
-  /* Controles: card propia, Idioma a la izquierda, Modo oscuro a la derecha */
+  /* Controles: card propia en mobile */
   .controls {
-    order: -1;
-    flex-direction: row;
+    max-width: 100%;
     justify-content: space-between;
-    align-items: center;
-    gap: 0.75rem;
-    width: 100%;
     padding: 0.6rem 1rem;
     background: #f9f9f9;
     border-radius: 8px;
@@ -710,11 +930,9 @@ body {
     gap: 0.4rem;
   }
 
-  /* Formulario: card propia, ancho completo */
+  /* Formulario: card propia, ancho completo en mobile */
   .sapta-form {
-    flex: none;
-    width: 100%;
-    box-sizing: border-box;
+    max-width: 100%;
     background: #f9f9f9;
     border-radius: 8px;
     padding: 1rem;
@@ -745,20 +963,14 @@ body {
     box-sizing: border-box;
   }
 
-  /* Switch y botón: filas separadas */
-  .form-group-buttons {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.75rem;
-  }
-
   .switch-container {
     margin: 0;
-    justify-content: flex-start;
+    justify-content: center;
   }
 
   .btn-calc {
-    width: 100%;
+    width: 80%;
+    max-width: 280px;
   }
 
   /* Resultados */
@@ -777,10 +989,34 @@ body {
     display: flex !important;
     flex-direction: column;
     align-items: center;
+    gap: 0.35rem;
+  }
+
+  .day-summary-cards {
+    grid-template-columns: 1fr;
   }
 
   .chart-container {
-    aspect-ratio: 2 / 1;
+    padding: 0.25rem 0;
+  }
+
+  .chart-wrapper {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .chart-svg-box {
+    width: 100%;
+    flex: none;
+  }
+
+  .chart-legend {
+    flex: none;
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.2rem;
+    justify-content: center;
   }
 
   .astro-table thead th,
