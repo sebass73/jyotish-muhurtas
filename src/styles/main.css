@@ -185,9 +185,6 @@ body {
   background: #cfd8dc;
 }
 
-.sapta-meta:hover {
-  background: #e1f5fe;
-}
 
 .card {
   background: #fafafa;
@@ -217,23 +214,75 @@ body {
   font-size: 1.1em;
 }
 
-.sapta-meta {
+/* ── Day summary two-card layout ──────────────────────── */
+.day-summary-cards {
   display: none;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.4rem 1.5rem;
-  background: #f9f9f9;
-  color: #333;
-  padding: 1rem;
-  border-radius: 8px;
-  margin: 1.5rem 1rem 3rem 1rem;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
-  font-size: 0.9rem;
-  text-align: center;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 0 1rem 2rem;
 }
 
-.meta-item {
+.summary-card {
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.05);
+  font-size: 0.875rem;
+}
+
+.summary-card-header {
+  font-size: 0.72rem;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #999;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.18rem 0;
+  gap: 0.5rem;
+}
+
+.summary-row span:first-child {
+  color: #666;
   white-space: nowrap;
+}
+
+.summary-row span:last-child {
+  font-weight: 500;
+  text-align: right;
+}
+
+.summary-phase {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.18rem 0 0.3rem;
+  flex-wrap: wrap;
+}
+
+.summary-phase-illum {
+  color: #999;
+}
+
+.dark .summary-card {
+  background: #2a2a2a;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.1);
+}
+
+.dark .summary-card-header {
+  color: #aaa;
+  border-bottom-color: #444;
+}
+
+.dark .summary-row span:first-child {
+  color: #aaa;
 }
 
 .hidden {
@@ -878,9 +927,8 @@ body {
     gap: 0.35rem;
   }
 
-  .meta-item {
-    display: block;
-    text-align: center;
+  .day-summary-cards {
+    grid-template-columns: 1fr;
   }
 
   .chart-container {
