@@ -792,7 +792,72 @@ body {
 }
 
 
-/* ————————————————————————————————  
+/* ————————————————————————————————
+   Desktop: formulario en fila única
+   ———————————————————————————————— */
+
+@media (min-width: 601px) {
+  /* .init se convierte en el único contenedor flex */
+  .init {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 0.75rem;
+    row-gap: 0.75rem;
+  }
+
+  /* Disuelve la caja del form: sus hijos pasan a ser hijos directos de .init */
+  .sapta-form {
+    display: contents;
+  }
+
+  /* Fila 1: inputs se expanden para llenar toda la fila junto al botón */
+  .form-group {
+    flex: 1 1 auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0;
+    order: 1;
+  }
+
+  /* Disuelve también form-group-buttons: switch y botón quedan al mismo nivel */
+  .form-group-buttons {
+    display: contents;
+  }
+
+  /* Botón: fila 1, pegado a los inputs */
+  .btn-calc {
+    order: 2;
+    width: auto;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Fila 2: switch — como form-group tiene flex:1 y llena fila 1,
+     el switch y .controls caen solos a la fila siguiente */
+  .switch-container {
+    order: 3;
+    flex-shrink: 0;
+  }
+
+  /* Fila 2: controles al lado del switch */
+  .controls {
+    order: 4;
+    width: auto;
+    max-width: none;
+    gap: 1rem;
+    margin-left: auto; /* empuja controles a la derecha de la fila 2 */
+  }
+
+  /* Mostrar leyenda del switch en desktop */
+  .switch-label {
+    display: inline;
+  }
+}
+
+/* ————————————————————————————————
    Responsive tweaks (móvil-first dentro de este bloque)
    ———————————————————————————————— */
 
