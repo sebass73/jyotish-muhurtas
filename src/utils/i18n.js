@@ -16,7 +16,7 @@ export const T = {
     exportCSV: "Exportar CSV",
     success: "✅ Listo!",
     errFetch: "❌ Error al obtener datos",
-    diagram: "Reloj Solar",
+    diagram: "Kalachakra",
     map: "Ubicación",
     planets: {
       Sol: "Sol",
@@ -26,6 +26,9 @@ export const T = {
       Saturno: "Saturno",
       Júpiter: "Júpiter",
       Marte: "Marte",
+      Urano: "Urano",
+      Neptuno: "Neptuno",
+      Plutón: "Plutón",
     },
     meta: {
       day: "Día",
@@ -34,6 +37,14 @@ export const T = {
       solarArc: "Arco del Sol",
       daySlots: "Muhurta Día",
       nightSlots: "Muhurta Noche",
+      moonPhase: "Fase lunar",
+      moonIllum: "Iluminación",
+      moonRise: "Hora salida",
+      moonSet: "Hora puesta",
+      amavasya: "Amavasya · Luna Nueva",
+      pratipada: "Pratipada · Creciente",
+      purnima: "Purnima · Luna Llena",
+      anumati: "Anumati · Menguante",
     },
     planetaryPositions: "Posiciones Planetarias",
     zodiacWheel: "Rueda Zodiacal",
@@ -91,7 +102,7 @@ export const T = {
     exportCSV: "Export CSV",
     success: "✅ Done!",
     errFetch: "❌ Error fetching data",
-    diagram: "Solar Clock",
+    diagram: "Kalachakra",
     map: "Location",
     planets: {
       Sol: "Sun",
@@ -101,6 +112,9 @@ export const T = {
       Saturno: "Saturn",
       Júpiter: "Jupiter",
       Marte: "Mars",
+      Urano: "Uranus",
+      Neptuno: "Neptune",
+      Plutón: "Pluto",
     },
     meta: {
       day: "Day",
@@ -109,6 +123,14 @@ export const T = {
       solarArc: "Solar Arc",
       daySlots: "Day Muhurta",
       nightSlots: "Night Muhurta",
+      moonPhase: "Moon phase",
+      moonIllum: "Illumination",
+      moonRise: "Rise time",
+      moonSet: "Set time",
+      amavasya: "Amavasya · New Moon",
+      pratipada: "Pratipada · Waxing",
+      purnima: "Purnima · Full Moon",
+      anumati: "Anumati · Waning",
     },
     planetaryPositions: "Planetary Positions",
     zodiacWheel: "Zodiac Wheel",
@@ -166,7 +188,7 @@ export const T = {
     exportCSV: "Esporta CSV",
     success: "✅ Fatto!",
     errFetch: "❌ Errore dati",
-    diagram: "Orologio Solare",
+    diagram: "Kalachakra",
     map: "Località",
     planets: {
       Sol: "Sole",
@@ -176,6 +198,9 @@ export const T = {
       Saturno: "Saturno",
       Júpiter: "Giove",
       Marte: "Marte",
+      Urano: "Urano",
+      Neptuno: "Nettuno",
+      Plutón: "Plutone",
     },
     meta: {
       day: "Giorno",
@@ -184,6 +209,14 @@ export const T = {
       solarArc: "Arco del Sole",
       daySlots: "Muhurta Giorno",
       nightSlots: "Muhurta Notte",
+      moonPhase: "Fase lunare",
+      moonIllum: "Illuminazione",
+      moonRise: "Ora alba",
+      moonSet: "Ora tramonto",
+      amavasya: "Amavasya · Luna Nuova",
+      pratipada: "Pratipada · Crescente",
+      purnima: "Purnima · Luna Piena",
+      anumati: "Anumati · Calante",
     },
     planetaryPositions: "Posizioni Planetarie",
     zodiacWheel: "Ruota Zodiacale",
@@ -260,7 +293,6 @@ export function initI18n() {
     lang = e.target.value;
     localStorage.setItem("lang", lang);
     apply();
-    window.dispatchEvent(new CustomEvent("themeChange"));
   });
 
   apply();

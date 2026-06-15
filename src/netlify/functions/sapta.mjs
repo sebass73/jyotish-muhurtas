@@ -2,20 +2,13 @@ import { ejecutarJSON } from "../../services/core.js";
 import { fetchEclLon, toZodiacPosition } from "../../services/horizons.js";
 import tzlookup from "tz-lookup";
 import { DateTime } from "luxon";
-import { obtenerDatosSol } from "../../services/sunCalc.js";
 
 export const handler = async (event) => {
   const params = event.queryStringParameters || {};
   const { ciudad, pais, fecha, usarHora } = params;
   try {
-    // 1) Base: muhûrtas, posiciones eclípticas, etc.
+    // 1) Base: muhûrtas, sunrise/sunset con azimuts incluidos
     const base = await ejecutarJSON(ciudad, pais, fecha);
-    // 2) Azimuts de Sol con SunCalc
-    const sol = await obtenerDatosSol(ciudad, pais, fecha);
-    base.sunrise.azimuth = sol.sunriseAzimuth;
-    base.sunrise.direction = sol.sunriseDirection;
-    base.sunset.azimuth = sol.sunsetAzimuth;
-    base.sunset.direction = sol.sunsetDirection;
 
     // 3) Posiciones planetarias (Horizons) --- lógica original
     const timezone = tzlookup(base.latitude, base.longitude);

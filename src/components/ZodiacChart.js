@@ -59,6 +59,7 @@ export default class ZodiacChart {
     this.orb = 5; // tolerancia de orbe
 
     this.hovered = null;
+    this.pts = [];
 
     // Eventos de interacción
     this.canvas.addEventListener("mousemove", (e) => this._onMouseMove(e));
@@ -250,30 +251,65 @@ export default class ZodiacChart {
       ctx.fill();
     });
 
-    // 8) Tooltips
+    // 8) Etiquetas: solo símbolo
     if (this.isMobile) {
-      this.pts.forEach((pt) => this._drawTooltip(pt, planetNames));
+      this.pts.forEach((pt) => this._drawTooltip(pt));
     } else if (this.hovered) {
-      this._drawTooltip(this.hovered, planetNames);
+      this._drawTooltip(this.hovered);
     }
 
     ctx.restore();
+
+    // 9) Leyenda de colores (HTML fuera del canvas)
+    this._buildLegend(lang);
   }
 
-  _drawTooltip(pt, planetNames) {
+  _drawTooltip(pt) {
     const ctx = this.ctx;
-    const sym = this.planetSymbols[pt.name] || "";
-    const name = planetNames[pt.name] || pt.name;
-    const txt = `${sym} ${name}`;
-    ctx.font = "12px sans-serif";
+    const sym = this.planetSymbols[pt.name] || "?";
+    ctx.font = "bold 13px sans-serif";
     ctx.textAlign = pt.x >= 0 ? "left" : "right";
-    ctx.textBaseline = "bottom";
-    const tx = pt.x + (pt.x >= 0 ? 8 : -8);
-    const ty = pt.y - 8;
-    const m = ctx.measureText(txt);
-    ctx.fillStyle = "rgba(255,255,255,0.9)";
-    ctx.fillRect(tx - (pt.x >= 0 ? 0 : m.width), ty - 14, m.width + 4, 18);
+    ctx.textBaseline = "middle";
+    const tx = pt.x + (pt.x >= 0 ? 9 : -9);
+    const ty = pt.y;
+    const m = ctx.measureText(sym);
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.fillRect(
+      tx - (pt.x >= 0 ? 2 : m.width + 2),
+      ty - 8, m.width + 4, 16
+    );
     ctx.fillStyle = "#2c3e50";
-    ctx.fillText(txt, tx, ty);
+    ctx.fillText(sym, tx, ty);
+  }
+
+  _buildLegend(lang) {
+    // La leyenda va en el section padre (.zodiac-section), no dentro del container del canvas
+    const section = this.canvas.parentElement.parentElement;
+    const existing = section.querySelector(".zodiac-legend");
+    if (existing) existing.remove();
+
+    const ASPECTS = [
+      { color: "#e74c3c", es: "Conjunción / Oposición", en: "Conjunction / Opposition", it: "Congiunzione / Opposizione" },
+      { color: "#2ecc71", es: "Trígono / Sextil",       en: "Trine / Sextile",           it: "Trigono / Sestile" },
+      { color: "#3498db", es: "Cuadratura",              en: "Square",                    it: "Quadratura" },
+      { color: "#f1c40f", es: "Semisextil",              en: "Semisextile",               it: "Semisestile" },
+      { color: "#9b59b6", es: "Quincunce",               en: "Quincunx",                  it: "Quincunce" },
+      { color: "#e67e22", es: "Sesquicuadratura",        en: "Sesquisquare",              it: "Sesquiquadrato" },
+    ];
+
+    const legend = document.createElement("div");
+    legend.className = "zodiac-legend";
+
+    ASPECTS.forEach(({ color, es, en, it }) => {
+      const label = lang === "en" ? en : lang === "it" ? it : es;
+      const item = document.createElement("div");
+      item.className = "zodiac-legend-item";
+      item.innerHTML =
+        `<span class="zodiac-legend-dot" style="background:${color}"></span>` +
+        `<span class="zodiac-legend-label">${label}</span>`;
+      legend.appendChild(item);
+    });
+
+    section.appendChild(legend);
   }
 }

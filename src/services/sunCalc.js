@@ -37,6 +37,26 @@ export async function obtenerDatosSol(ciudad, pais, fechaISO) {
   const dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
   const cardinal = (deg) => dirs[Math.round(deg / 45) % 8];
 
+  // 5) Moon illumination + phase
+  const moonIllum = SunCalc.getMoonIllumination(d);
+  const moonTimes = SunCalc.getMoonTimes(d, lat, lon);
+
+  // Emoji: 8 fases visuales
+  const PHASE_EMOJIS = ["🌑","🌒","🌓","🌔","🌕","🌖","🌗","🌘"];
+  const phaseIdx     = Math.round(moonIllum.phase * 8) % 8;
+
+  // Nombre védico: 4 estados de ±3.7 días alrededor de cada pico
+  // Ciclo ~29.53 días → cada cuarto = 0.25; margen = 0.125
+  const p = moonIllum.phase;
+  const vedicKey =
+    (p < 0.125 || p >= 0.875) ? "amavasya"  :
+    p < 0.375                  ? "pratipada" :
+    p < 0.625                  ? "purnima"   :
+                                 "anumati";
+
+  const fmtMoon = (jsDate) =>
+    jsDate ? DateTime.fromJSDate(jsDate, { zone }).toFormat("HH:mm") : null;
+
   return {
     latitude: lat,
     longitude: lon,
@@ -49,5 +69,12 @@ export async function obtenerDatosSol(ciudad, pais, fechaISO) {
     sunriseDirection: cardinal(azRise),
     sunsetAzimuth: azSet,
     sunsetDirection: cardinal(azSet),
+    moon: {
+      phaseKey:     vedicKey,
+      phaseEmoji:   PHASE_EMOJIS[phaseIdx],
+      illumination: Math.round(moonIllum.fraction * 100),
+      riseTime:     fmtMoon(moonTimes.rise),
+      setTime:      fmtMoon(moonTimes.set),
+    },
   };
 }
